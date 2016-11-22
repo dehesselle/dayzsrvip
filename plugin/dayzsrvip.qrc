@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="dayzlogo">../res/dayzlogo.png</file>
+    </qresource>
+</RCC>

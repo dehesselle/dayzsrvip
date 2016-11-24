@@ -30,9 +30,9 @@ Now you're half way there. This is what it looks like on its first start.
 ![alt-text](/doc/png/main_window_init.png)
 
 ### Description
-Most of the upper half of the window is the "local info" section __(1)__. This is where your own ingame name, server name and IP are shown. The lower half is the "remote info" section __(2)__. It shows everybody else's ingame name, server name and server IP along with a timestamp to indicate when the last update was received.
+Most of the upper half of the window is the "local info" section __(1)__. This is where your own ingame name, server name and IP are shown. The lower half is the "remote info" section __(2)__. It shows everybody else's ingame name, server name and server IP along with a timestamp to indicate when the last update was received. You can clear this view by clicking the `Clear` button.
 
-You have to click the `Open...` button __(3)__ to select your `.DayZProfile` file that will be used to gather your data. Once you've selected a valid profile, the radiobuttons on the left side __(4)__ become active (well, the `on` button does). If you select `on` the plugin will start to send your data via textmessages to the TeamSpeak channel.
+You have to click the `Open...` button __(3)__ to select your `.DayZProfile` file that will be used to gather your data. Once you've selected a valid profile, the radiobuttons on the left side __(4)__ become active (well, the `on` button does). If you select `on` the plugin will start to send your data via text messages to the TeamSpeak channel.
 
 ![alt-text](/doc/png/main_window_init_annotated.png)
 

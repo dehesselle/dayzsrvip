@@ -15,8 +15,8 @@
 #include <QList>
 #include <QThread>
 #include <QMessageBox>
-#include "Log.h"
 #include "Version.h"
+#include "Log.h"
 
 static const char* LOCALINFO_SERVER_INIT = "___SERVER_NAME___";
 static const char* LOCALINFO_SERVER_IP_INIT = "___SERVER_IP___";
@@ -25,17 +25,18 @@ static const char* LOCALINFO_CHAR_NAME_INIT = "___CHAR_NAME___";
 const char* DayzServerIp::MSG_STR_UPDATE_SERVER = "[dayzsrvip|server]";
 const char* DayzServerIp::MSG_STR_RENAME_CHAR = "[dayzsrvip|char]";
 
-
 DayzServerIp::DayzServerIp(QWidget *parent,
                            const QString& configPath) :
    QDialog(parent),
    ui(new Ui::DayzServerIp),
    m_scene(0),
-   m_fsWatcher(0),
+   m_fsWatcher(new QFileSystemWatcher(this)),
    m_path(configPath.left(configPath.length() - 1)),
    m_isEnabled(false)
 {
    Q_INIT_RESOURCE(dayzsrvip);
+
+   connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
 
    ui->setupUi(this);
 
@@ -51,7 +52,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 #ifdef QT_DEBUG
       // this enables the 'DebugDialog': left-click on the DayZ-Logo ('gvLogo')
       m_scene = new GraphicsScene(this);
-      m_scene->setParentWidget(this);
+      m_scene->setParentWidget(this);  //TODO move this to GraphicsScene.cpp
 #else
       m_scene = new QGraphicsScene(this);
 #endif
@@ -70,7 +71,10 @@ DayzServerIp::DayzServerIp(QWidget *parent,
          QTextStream in(&history);
 
          while (! in.atEnd())
-            updateRemoteInfo(in.readLine(), false);
+         {
+            QString line = in.readLine();
+            updateRemoteInfo(line, false);
+         }
       }
    }
 
@@ -87,7 +91,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
                       << m_player.m_name
                       << m_player.m_serverName
                       << m_player.m_serverIp);
-      startFsWatcher(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
+      m_fsWatcher->addPath(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
       ui->rbOn->setEnabled(true);
    }
 }
@@ -115,7 +119,13 @@ void DayzServerIp::on_pbOpenProfile_clicked()
                       << m_player.m_name
                       << m_player.m_serverName
                       << m_player.m_serverIp);
-      startFsWatcher(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
+
+      if (m_fsWatcher->files().count())
+      {
+         m_fsWatcher->removePaths(m_fsWatcher->files());
+         m_fsWatcher->addPath(filename);
+      }
+
       ui->rbOn->setEnabled(true);
    }
 }
@@ -123,8 +133,9 @@ void DayzServerIp::on_pbOpenProfile_clicked()
 void DayzServerIp::updateRemoteInfo(QString info,
                                   bool saveHistory)
 {
-   //LOG(TRACE) << "info(" << info.length() << "): " << info;
-
+#ifndef DAYZSRVIP_LIBRARY
+   LOG(TRACE) << "info(" << info.length() << "): " << info;
+#endif
    QRegExp regex("###");
    QStringList infoList = info.split(regex);
 
@@ -140,7 +151,9 @@ void DayzServerIp::updateRemoteInfo(QString info,
          {
             case 0:   // insert new item
             {
+#ifndef DAYZSRVIP_LIBRARY
                LOG(TRACE) << "inserting item";
+#endif
                int row = m_remoteInfo.rowCount();
 
                for (int i = 0; i < infoList.count(); i++)
@@ -152,7 +165,9 @@ void DayzServerIp::updateRemoteInfo(QString info,
             }
             case 1:   // update existing item
             {
+#ifndef DAYZSRVIP_LIBRARY
                LOG(TRACE) << "updating item";
+#endif
 
                QStandardItem* firstItem = itemList.at(0);
                int row = firstItem->row();
@@ -245,19 +260,11 @@ void DayzServerIp::updateLocalInfo(QStringList info)
    oldServerIp = serverIp;
 }
 
-void DayzServerIp::startFsWatcher(QString file)
-{
-   if (m_fsWatcher)
-      delete m_fsWatcher;
-
-   m_fsWatcher = new QFileSystemWatcher(this);
-   m_fsWatcher->addPath(file);
-   connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
-}
-
 void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 {
+#ifndef DAYZSRVIP_LIBRARY
    LOG(TRACE) << "file: " << path;
+#endif
 
    int count = 0;
 
@@ -273,24 +280,18 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 
    if (count > 5)
    {
+#ifndef DAYZSRVIP_LIBRARY
       LOG(ERROR) << "unable to import after " << count << " attempts";
-
+#endif
       QMessageBox::critical(this,
                             "read error", "Unable to read DayZ Profile.",
                             QMessageBox::Ok);
-
-      delete m_fsWatcher;
-      m_fsWatcher = nullptr;
    }
 
-   if (m_fsWatcher && (! m_fsWatcher->files().count()))
-   {
-      LOG(TRACE) << "re-adding path to QFileSystemWatcher";
+   if (! m_fsWatcher->files().count())
       m_fsWatcher->addPath(path);
-   }
 
    updateLocalInfo(m_player.toStringList());
-
 
    sendTs3Message(m_player.toString());
 }

@@ -47,8 +47,6 @@ public:
 
    void (*m_sendTs3Message)(QString);
 
-
-
 private slots:
    void on_pbOpenProfile_clicked();
    void on_pbHide_clicked();
@@ -61,7 +59,6 @@ private slots:
 
 
 private:
-   void startFsWatcher(QString file);
    void setupRemoteInfo();
    void sendTs3Message(QString text);
 

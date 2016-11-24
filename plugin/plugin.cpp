@@ -22,7 +22,6 @@
 #include "plugin.h"
 //--- additional stuff required by dayzsrvip -----------------------------------
 #include "DayzServerIp.h"
-#include "Log.h"
 #include "Version.h"
 #include <QString>
 //------------------------------------------------------------------------------
@@ -61,10 +60,7 @@ static int wcharToUtf8(const wchar_t* str, char** result) {
 #endif
 
 //--- additional stuff required by dayzsrvip -----------------------------------
-INITIALIZE_EASYLOGGINGPP   // not used by the plugin itself but required
-                           // to build testprogram
-
-DayzServerIp* dayzServerIp = 0;
+DayzServerIp* dayzServerIp = Q_NULLPTR;
 
 void sendMessageToChannel(QString text)   // wrapper to simplify sending
                                           // a message to current channel
@@ -109,6 +105,11 @@ void sendMessageToChannel(QString text)   // wrapper to simplify sending
    if (rc == ERROR_ok)
    {
    }
+}
+
+void logInfo(QString message)
+{
+   ts3Functions.logMessage(message.toStdString().c_str(), LogLevel_INFO, "dayzsrvip", 0);
 }
 //------------------------------------------------------------------------------
 
@@ -166,16 +167,18 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
  * Custom code called right after loading the plugin. Returns 0 on success, 1 on failure.
  * If the function returns 1 on failure, the plugin will be unloaded again.
  */
-int ts3plugin_init() {
+int ts3plugin_init()
+{
+   int result = 0;
+
    char appPath[PATH_BUFSIZE];
    char resourcesPath[PATH_BUFSIZE];
    char configPath[PATH_BUFSIZE];
    char pluginPath[PATH_BUFSIZE];
 
-    /* Your plugin init code here */
-    printf("PLUGIN: init\n");
+   logInfo("initializing");
 
-    /* Example on how to query application, resources and configuration paths from client */
+   /* Example on how to query application, resources and configuration paths from client */
     /* Note: Console client returns empty string for app and resources path */
     ts3Functions.getAppPath(appPath, PATH_BUFSIZE);
     ts3Functions.getResourcesPath(resourcesPath, PATH_BUFSIZE);
@@ -184,10 +187,19 @@ int ts3plugin_init() {
 
    printf("PLUGIN: App path: %s\nResources path: %s\nConfig path: %s\nPlugin path: %s\n", appPath, resourcesPath, configPath, pluginPath);
 
-   if (! ::dayzServerIp)
-      ::dayzServerIp = new DayzServerIp(0, configPath);
+   ::dayzServerIp = new DayzServerIp(0, configPath);
 
-   ::dayzServerIp->m_sendTs3Message = &sendMessageToChannel;
+   if (::dayzServerIp)
+   {
+      logInfo("successfully created instance");
+      ::dayzServerIp->m_sendTs3Message = &sendMessageToChannel;
+      result = 0;
+   }
+   else
+   {
+      logInfo("failed to create instance");
+      result = 1;
+   }
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
    /* -2 is a very special case and should only be used if a plugin displays a dialog (e.g. overlay) asking the user to disable
@@ -200,8 +212,9 @@ void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
     printf("PLUGIN: shutdown\n");
 
-    if (::dayzServerIp)
-       delete ::dayzServerIp;
+    logInfo("terminating");
+    delete ::dayzServerIp;
+    logInfo("terminated");
 
 
    /*
@@ -253,7 +266,7 @@ void ts3plugin_registerPluginID(const char* id) {
 
 /* Plugin command keyword. Return NULL or "" if not used. */
 const char* ts3plugin_commandKeyword() {
-   return NULL;;
+   return NULL;
 }
 
 /* Plugin processes console command. Return 0 if plugin handled the command, 1 if not handled. */

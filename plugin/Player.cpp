@@ -17,8 +17,9 @@ const IniFile::KeyValue Player::INI_DAYZ_PROFILE = { "Player/dayzProfile", "" };
 
 bool Player::importFromFile(QString filename)
 {
+#ifndef DAYZSRVIP_LIBRARY
    LOG(TRACE) << "filename: " << filename;
-
+#endif
    bool result = false;
 
    if (QFile::exists(filename))
@@ -38,9 +39,9 @@ bool Player::importFromFile(QString filename)
                 line.contains("lastMPServer"))
                profileData << line;
          }
-
+#ifndef DAYZSRVIP_LIBRARY
          LOG(TRACE) << "profileData.count() = " << profileData.count();
-
+#endif
          if (profileData.count() == 3)
          {
             QRegExp regex("=|\"");
@@ -57,12 +58,12 @@ bool Player::importFromFile(QString filename)
             }
 
             m_timestamp = QFileInfo(filename).lastModified().toString("yy.MM.dd hh:mm:ss");
-
+#ifndef DAYZSRVIP_LIBRARY
             LOG(TRACE) << "m_name(" << m_name << ")";
             LOG(TRACE) << "m_serverIp(" << m_serverIp << ")";
             LOG(TRACE) << "m_serverName(" << m_serverName << ")";
             LOG(TRACE) << "m_timestamp(" << m_timestamp << ")";
-
+#endif
             result = true;
          }
 

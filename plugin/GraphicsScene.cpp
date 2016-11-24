@@ -16,12 +16,8 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
    if (mouseEvent->button() == Qt::LeftButton)
    {
-      DebugDialog* debugDialog = new DebugDialog(m_parent);
+      DebugDialog* debugDialog = new DebugDialog(
+               dynamic_cast<QWidget*>(this->parent()));
       debugDialog->show();
    }
-}
-
-void GraphicsScene::setParentWidget(QWidget *widget)
-{
-   m_parent = widget;
 }

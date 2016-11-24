@@ -52,7 +52,6 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 #ifdef QT_DEBUG
       // this enables the 'DebugDialog': left-click on the DayZ-Logo ('gvLogo')
       m_scene = new GraphicsScene(this);
-      m_scene->setParentWidget(this);  //TODO move this to GraphicsScene.cpp
 #else
       m_scene = new QGraphicsScene(this);
 #endif

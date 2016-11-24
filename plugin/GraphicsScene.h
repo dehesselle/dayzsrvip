@@ -19,9 +19,6 @@ public:
 
    void setParentWidget(QWidget* widget);
    virtual void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
-
-private:
-   QWidget* m_parent;
 };
 
 #endif // GRAPHICSSCENE_H

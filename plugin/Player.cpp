@@ -6,7 +6,6 @@
 
 #include "Player.h"
 #include <QFile>
-#include <QFileInfo>
 #include <QRegExp>
 #include <QStringList>
 #include <QTextStream>
@@ -18,14 +17,17 @@ const IniFile::KeyValue Player::INI_DAYZ_PROFILE = { "Player/dayzProfile", "" };
 
 bool Player::importFromFile(QString filename)
 {
-#ifndef DAYZSRVIP_LIBRARY
-   LOG(TRACE) << "filename: " << filename;
-#endif
    bool result = false;
 
-   if (QFile::exists(filename))
+   m_filename = filename;
+
+#ifndef DAYZSRVIP_LIBRARY
+   LOG(TRACE) << "filename: " << m_filename;
+#endif
+
+   if (QFile::exists(m_filename))
    {
-      QFile dayzProfile(filename);
+      QFile dayzProfile(m_filename);
 
       if (dayzProfile.open(QFile::ReadOnly))
       {
@@ -58,7 +60,8 @@ bool Player::importFromFile(QString filename)
                   m_serverName = parts.at(2);
             }
 
-            m_timestamp = QFileInfo(filename).lastModified().toString("yy.MM.dd hh:mm:ss");
+            updateTimestamp();
+
 #ifndef DAYZSRVIP_LIBRARY
             LOG(TRACE) << "m_name(" << m_name << ")";
             LOG(TRACE) << "m_serverIp(" << m_serverIp << ")";
@@ -78,6 +81,7 @@ bool Player::importFromFile(QString filename)
 QString Player::toMessage()
 {
    QString result(DayzServerIp::MSG_STR_UPDATE_SERVER);
+   updateTimestamp();
 
    result += "###"
          + m_name + "###"
@@ -97,4 +101,9 @@ QStringList Player::toLocalInfo()
           << m_serverIp;
 
    return result;
+}
+
+void Player::updateTimestamp()
+{
+   m_timestamp = QDateTime::currentDateTime().toString("yy.MM.dd hh:mm:ss");
 }

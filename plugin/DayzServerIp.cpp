@@ -15,6 +15,7 @@
 #include <QList>
 #include <QThread>
 #include <QMessageBox>
+#include <QDateTime>
 #include "Version.h"
 #include "Log.h"
 
@@ -24,6 +25,8 @@ static const char* LOCALINFO_CHAR_NAME_INIT = "___CHAR_NAME___";
 
 const char* DayzServerIp::MSG_STR_UPDATE_SERVER = "[dayzsrvip|server]";
 const char* DayzServerIp::MSG_STR_RENAME_CHAR = "[dayzsrvip|char]";
+const char* DayzServerIp::MSG_STR_REQUEST_SITREP = "[dayzsrvip|sitrep]";
+const char* DayzServerIp::MSG_STR_SEPARATOR = "###";
 
 DayzServerIp::DayzServerIp(QWidget *parent,
                            const QString& configPath) :
@@ -76,7 +79,9 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       }
    }
 
-   ui->lMessage->setText(QString("version ") + DAYZSERVERIP_VERSION);
+   setStatusMessage(QString("Welcome! This is version ")
+                    + DAYZSERVERIP_VERSION
+                    + QString("."));
 
    if (m_player.importFromFile(m_settings.value(Player::INI_DAYZ_PROFILE).toString()))
    {
@@ -123,7 +128,7 @@ void DayzServerIp::updateRemoteInfo(QString info,
 #ifndef DAYZSRVIP_LIBRARY
    LOG(TRACE) << "info(" << info.length() << "): " << info;
 #endif
-   QRegExp regex("###");
+   QRegExp regex(MSG_STR_SEPARATOR);
    QStringList infoList = info.split(regex);
 
    switch (toMessageType(infoList))
@@ -237,9 +242,9 @@ void DayzServerIp::updateLocalInfo(QStringList info)
    if ((oldCharName != charName) &&
       (oldCharName != LOCALINFO_CHAR_NAME_INIT))
    {
-      if (ui->rbOn->isChecked())
-         emit sendTs3Message(QString() + MSG_STR_RENAME_CHAR +
-                     "###" + oldCharName + "###" + charName);
+      requestSendTs3Message(QString(MSG_STR_RENAME_CHAR)
+                            + MSG_STR_SEPARATOR + oldCharName
+                            + MSG_STR_SEPARATOR + charName);
    }
 
    oldCharName = charName;
@@ -280,18 +285,22 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 
    updateLocalInfo(m_player.toLocalInfo());
 
-   if (ui->rbOn->isChecked())
-      emit sendTs3Message(m_player.toMessage());
+   requestSendTs3Message(m_player.toMessage());
+   setStatusMessage("Sent update to teammates.");
 }
 
 void DayzServerIp::on_rbOn_clicked()
 {
    ui->pbOpenProfile->setEnabled(false);
+   ui->pbSitrep->setEnabled(true);
+   setStatusMessage("ON");
 }
 
 void DayzServerIp::on_rbOff_clicked()
 {
    ui->pbOpenProfile->setEnabled(true);
+   ui->pbSitrep->setEnabled(false);
+   setStatusMessage("OFF");
 }
 
 void DayzServerIp::on_pbRemoteInfoClear_clicked()
@@ -300,19 +309,23 @@ void DayzServerIp::on_pbRemoteInfoClear_clicked()
    setupRemoteInfo();
 }
 
-DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& infos)
+DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& message)
 {
    MessageType result = MessageType::INVALID;
 
-   if (infos.at(0) == MSG_STR_UPDATE_SERVER)
+   if (message.at(0) == MSG_STR_UPDATE_SERVER)
    {
-      if (infos.count() == 5)
+      if (message.count() == 5)
          result = MessageType::UPDATE_SERVER;
    }
-   else if (infos.at(0) == MSG_STR_RENAME_CHAR)
+   else if (message.at(0) == MSG_STR_RENAME_CHAR)
    {
-      if (infos.count() == 3)
+      if (message.count() == 3)
          result = MessageType::RENAME_CHAR;
+   }
+   else if (message.at(0) == MSG_STR_REQUEST_SITREP)
+   {
+      result = MessageType::REQUEST_SITREP;
    }
 
    return result;
@@ -329,4 +342,47 @@ void DayzServerIp::setupRemoteInfo()
    ui->tvRemoteInfo->setColumnWidth(1, 200);
    ui->tvRemoteInfo->setColumnWidth(2, 100);
    ui->tvRemoteInfo->setColumnWidth(3, 100);
+}
+
+void DayzServerIp::onTs3MessageReceived(const QString &message)
+{
+   QRegExp regex(MSG_STR_SEPARATOR);
+   QStringList messageParts = message.split(regex);
+
+   switch (toMessageType(messageParts))
+   {
+      case MessageType::UPDATE_SERVER:
+         updateRemoteInfo(message, true);
+         setStatusMessage("Update from teammate received.");
+         break;
+      case MessageType::RENAME_CHAR:
+         updateRemoteInfo(message, false);
+         setStatusMessage("Teammate changed name.");
+         break;
+      case MessageType::REQUEST_SITREP:
+         setStatusMessage("Request for sitrep received.");
+         emit sendTs3Message(m_player.toMessage());
+         break;
+      case MessageType::INVALID:
+         break;
+   }
+}
+
+void DayzServerIp::setStatusMessage(const QString &message)
+{
+   ui->lMessage->setText(QDateTime::currentDateTime().toString("[H:M:s] ") + message);
+}
+
+void DayzServerIp::on_pbSitrep_clicked()
+{
+   setStatusMessage("Requesting sitrep from teammates.");
+   requestSendTs3Message(QString(MSG_STR_REQUEST_SITREP) + MSG_STR_SEPARATOR);
+}
+
+void DayzServerIp::requestSendTs3Message(const QString &message)
+{
+   if (ui->rbOn->isChecked())
+      emit sendTs3Message(message);
+   else
+      setStatusMessage("Not transmitting - still 'off'.");
 }

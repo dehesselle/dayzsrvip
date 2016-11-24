@@ -155,7 +155,8 @@ const char* ts3plugin_author() {
 const char* ts3plugin_description() {
    /* If you want to use wchar_t, see ts3plugin_name() on how to use */
     return "This plugin distributes the server's name and IP address "
-          "you're playing on to all people in your channel.";
+          "you're playing on to all people in your channel.\n\n"
+          "https://github.com/dehesselle/dayzsrvip";
 }
 
 /* Set TeamSpeak 3 callback functions */
@@ -504,7 +505,7 @@ void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) 
 
 /* Static title shown in the left column in the info frame */
 const char* ts3plugin_infoTitle() {
-   return "Test plugin info";
+   return "DayZ Server IP";
 }
 
 /*
@@ -849,7 +850,7 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
       return 0; /* Client will ignore the message anyways, so return value here doesn't matter */
    }
 
-   ::dayzServerIp->updateRemoteInfo(message, true);
+   ::dayzServerIp->onTs3MessageReceived(message);
 
 #if 0
    {

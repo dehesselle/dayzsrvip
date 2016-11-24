@@ -129,15 +129,15 @@ p, li { white-space: pre-wrap; }
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
-        <widget class="QPushButton" name="pbRemoteInfoClear">
+        <widget class="QPushButton" name="pbSitrep">
          <property name="maximumSize">
           <size>
-           <width>35</width>
+           <width>60</width>
            <height>16777215</height>
           </size>
          </property>
          <property name="text">
-          <string>Clear</string>
+          <string>sitrep</string>
          </property>
         </widget>
        </item>
@@ -153,6 +153,19 @@ p, li { white-space: pre-wrap; }
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pbRemoteInfoClear">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Clear</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

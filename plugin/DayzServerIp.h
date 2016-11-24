@@ -49,7 +49,6 @@ public:
 
 private slots:
    void on_pbOpenProfile_clicked();
-   void on_pbHide_clicked();
    void on_pbRemoteInfoClear_clicked();
 
    void onFsWatcherFileChanged(const QString& path);

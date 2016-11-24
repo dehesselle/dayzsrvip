@@ -282,11 +282,6 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
    sendTs3Message(m_player.toMessage());
 }
 
-void DayzServerIp::on_pbHide_clicked()
-{
-    hide();
-}
-
 void DayzServerIp::on_rbOn_clicked()
 {
    ui->pbOpenProfile->setEnabled(false);

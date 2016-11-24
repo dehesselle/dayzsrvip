@@ -237,7 +237,8 @@ void DayzServerIp::updateLocalInfo(QStringList info)
    if ((oldCharName != charName) &&
       (oldCharName != LOCALINFO_CHAR_NAME_INIT))
    {
-      sendTs3Message(QString() + MSG_STR_RENAME_CHAR +
+      if (ui->rbOn->isChecked())
+         emit sendTs3Message(QString() + MSG_STR_RENAME_CHAR +
                      "###" + oldCharName + "###" + charName);
    }
 
@@ -279,7 +280,8 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 
    updateLocalInfo(m_player.toLocalInfo());
 
-   sendTs3Message(m_player.toMessage());
+   if (ui->rbOn->isChecked())
+      emit sendTs3Message(m_player.toMessage());
 }
 
 void DayzServerIp::on_rbOn_clicked()
@@ -327,11 +329,4 @@ void DayzServerIp::setupRemoteInfo()
    ui->tvRemoteInfo->setColumnWidth(1, 200);
    ui->tvRemoteInfo->setColumnWidth(2, 100);
    ui->tvRemoteInfo->setColumnWidth(3, 100);
-}
-
-void DayzServerIp::sendTs3Message(QString text)
-{
-   if (ui->rbOn->isChecked())
-      (*m_sendTs3Message)(text);
-
 }

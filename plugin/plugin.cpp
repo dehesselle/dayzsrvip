@@ -183,7 +183,9 @@ int ts3plugin_init()
    if (::dayzServerIp)
    {
       logInfo("successfully created instance");
-      ::dayzServerIp->m_sendTs3Message = &sendMessageToChannel;
+      ::dayzServerIp->connect(::dayzServerIp,
+                              &DayzServerIp::sendTs3Message,
+                              sendMessageToChannel);
       result = 0;
    }
    else

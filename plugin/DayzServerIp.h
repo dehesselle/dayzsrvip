@@ -32,7 +32,6 @@ public:
    void updateRemoteInfo(QString info, bool saveHistory);
    void updateLocalInfo(QStringList info);
 
-
    enum class MessageType
    {
       INVALID = 0,
@@ -45,21 +44,20 @@ public:
    static const char* MSG_STR_UPDATE_SERVER;
    static const char* MSG_STR_RENAME_CHAR;
 
-   void (*m_sendTs3Message)(QString);
+signals:
+   void sendTs3Message(QString text);
 
 private slots:
    void on_pbOpenProfile_clicked();
    void on_pbRemoteInfoClear_clicked();
 
-   void onFsWatcherFileChanged(const QString& path);
-
    void on_rbOn_clicked();
    void on_rbOff_clicked();
 
+   void onFsWatcherFileChanged(const QString& path);
 
 private:
    void setupRemoteInfo();
-   void sendTs3Message(QString text);
 
    Ui::DayzServerIp *ui;
 

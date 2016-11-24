@@ -74,7 +74,7 @@ bool Player::importFromFile(QString filename)
    return result;
 }
 
-QString Player::toString()
+QString Player::toMessage()
 {
    QString result;
 
@@ -87,7 +87,7 @@ QString Player::toString()
    return result;
 }
 
-QStringList Player::toStringList()
+QStringList Player::toLocalInfo()
 {
    QStringList result;
 

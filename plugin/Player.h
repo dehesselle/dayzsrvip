@@ -17,8 +17,8 @@ public:
    static const IniFile::KeyValue INI_DAYZ_PROFILE;
 
    bool importFromFile(QString filename);
-   QString toString();
-   QStringList toStringList();
+   QString toMessage();
+   QStringList toLocalInfo();
 
    QString m_name;
    QString m_serverName;

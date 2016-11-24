@@ -76,19 +76,11 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       }
    }
 
-//   ui->lMessage->setText("Hosted on <a href=\"https://github.com/dehesselle/dayzsrvip/\">Github</a>.");
-//   ui->lMessage->setTextFormat(Qt::RichText);
-//   ui->lMessage->setTextInteractionFlags(Qt::TextBrowserInteraction);
-//   ui->lMessage->setOpenExternalLinks(true);
-
    ui->lMessage->setText(QString("version ") + DAYZSERVERIP_VERSION);
 
    if (m_player.importFromFile(m_settings.value(Player::INI_DAYZ_PROFILE).toString()))
    {
-      updateLocalInfo(QStringList()
-                      << m_player.m_name
-                      << m_player.m_serverName
-                      << m_player.m_serverIp);
+      updateLocalInfo(m_player.toLocalInfo());
       m_fsWatcher->addPath(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
       ui->rbOn->setEnabled(true);
    }
@@ -113,10 +105,7 @@ void DayzServerIp::on_pbOpenProfile_clicked()
    if (m_player.importFromFile(filename))
    {
       m_settings.setValue(Player::INI_DAYZ_PROFILE, filename);
-      updateLocalInfo(QStringList()
-                      << m_player.m_name
-                      << m_player.m_serverName
-                      << m_player.m_serverIp);
+      updateLocalInfo(m_player.toLocalInfo());
 
       if (m_fsWatcher->files().count())
       {
@@ -129,7 +118,7 @@ void DayzServerIp::on_pbOpenProfile_clicked()
 }
 
 void DayzServerIp::updateRemoteInfo(QString info,
-                                  bool saveHistory)
+                                    bool saveHistory)
 {
 #ifndef DAYZSRVIP_LIBRARY
    LOG(TRACE) << "info(" << info.length() << "): " << info;
@@ -166,7 +155,6 @@ void DayzServerIp::updateRemoteInfo(QString info,
 #ifndef DAYZSRVIP_LIBRARY
                LOG(TRACE) << "updating item";
 #endif
-
                QStandardItem* firstItem = itemList.at(0);
                int row = firstItem->row();
 
@@ -223,7 +211,7 @@ void DayzServerIp::updateRemoteInfo(QString info,
       }
    }
 
-   if (infoList.at(0) == "[dayzserverip]")
+   if (infoList.at(0) == MSG_STR_UPDATE_SERVER)
    {
       m_remoteInfo.sort(ui->tvRemoteInfo->header()->sortIndicatorSection(),
                         ui->tvRemoteInfo->header()->sortIndicatorOrder());
@@ -289,9 +277,9 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
    if (! m_fsWatcher->files().count())
       m_fsWatcher->addPath(path);
 
-   updateLocalInfo(m_player.toStringList());
+   updateLocalInfo(m_player.toLocalInfo());
 
-   sendTs3Message(m_player.toString());
+   sendTs3Message(m_player.toMessage());
 }
 
 void DayzServerIp::on_pbHide_clicked()

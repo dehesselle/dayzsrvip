@@ -126,7 +126,7 @@ void DayzServerIp::updateRemoteInfo(QString info,
    QRegExp regex("###");
    QStringList infoList = info.split(regex);
 
-   switch (toMessage(infoList))
+   switch (toMessageType(infoList))
    {
       case MessageType::UPDATE_SERVER:
       {
@@ -300,7 +300,7 @@ void DayzServerIp::on_pbRemoteInfoClear_clicked()
    setupRemoteInfo();
 }
 
-DayzServerIp::MessageType DayzServerIp::toMessage(const QStringList& infos)
+DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& infos)
 {
    MessageType result = MessageType::INVALID;
 

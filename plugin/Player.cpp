@@ -12,6 +12,7 @@
 #include <QTextStream>
 #include <QDateTime>
 #include "Log.h"
+#include "DayzServerIp.h"
 
 const IniFile::KeyValue Player::INI_DAYZ_PROFILE = { "Player/dayzProfile", "" };
 
@@ -76,9 +77,9 @@ bool Player::importFromFile(QString filename)
 
 QString Player::toMessage()
 {
-   QString result;
+   QString result(DayzServerIp::MSG_STR_UPDATE_SERVER);
 
-   result = "[dayzsrvip]###"
+   result += "###"
          + m_name + "###"
          + m_serverName + "###"
          + m_serverIp + "###"

@@ -39,7 +39,7 @@ public:
       RENAME_CHAR
    };
 
-   MessageType toMessage(const QStringList& infos);
+   MessageType toMessageType(const QStringList& infos);
 
    static const char* MSG_STR_UPDATE_SERVER;
    static const char* MSG_STR_RENAME_CHAR;

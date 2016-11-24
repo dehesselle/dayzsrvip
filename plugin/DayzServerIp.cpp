@@ -31,8 +31,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
    ui(new Ui::DayzServerIp),
    m_scene(0),
    m_fsWatcher(new QFileSystemWatcher(this)),
-   m_path(configPath.left(configPath.length() - 1)),
-   m_isEnabled(false)
+   m_path(configPath.left(configPath.length() - 1))
 {
    Q_INIT_RESOURCE(dayzsrvip);
 
@@ -303,13 +302,11 @@ void DayzServerIp::on_pbHide_clicked()
 void DayzServerIp::on_rbOn_clicked()
 {
    ui->pbOpenProfile->setEnabled(false);
-   m_isEnabled = ui->rbOn->isChecked();
 }
 
 void DayzServerIp::on_rbOff_clicked()
 {
-    ui->pbOpenProfile->setEnabled(true);
-    m_isEnabled = ui->rbOn->isChecked();
+   ui->pbOpenProfile->setEnabled(true);
 }
 
 void DayzServerIp::on_pbRemoteInfoClear_clicked()

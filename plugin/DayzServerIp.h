@@ -79,8 +79,6 @@ private:
    Player m_player;
 
    QString m_path;
-
-   bool m_isEnabled;
 };
 
 #endif // DAYZSERVERIP_H

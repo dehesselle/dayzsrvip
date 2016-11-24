@@ -20,9 +20,8 @@ SOURCES += plugin.cpp \
     DebugDialog.cpp
 
 HEADERS += plugin.h\
-        dayzsrvip_global.h \
+    dayzsrvip_global.h \
     DayzServerIp.h \
-    easylogging++.h \
     IniFile.h \
     Log.h \
     Player.h \

@@ -21,12 +21,12 @@ SOURCES += main.cpp\
 
 HEADERS  += ../plugin/DayzServerIp.h \
     ../plugin/DebugDialog.h \
-    ../plugin/easylogging++.h \
     ../plugin/GraphicsScene.h \
     ../plugin/IniFile.h \
     ../plugin/Log.h \
     ../plugin/Player.h \
-    ../plugin/Version.h
+    ../plugin/Version.h \
+    easylogging++.h
 
 FORMS    += ../plugin/DayzServerIp.ui \
     ../plugin/DebugDialog.ui

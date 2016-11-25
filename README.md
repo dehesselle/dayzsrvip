@@ -6,16 +6,18 @@ This plugin can show and automatically distribute and update the IP and name of 
 ## Features
 >TODO documentation
 
-There is a small [manual](doc/MANUAL.md) that'll get you up and running in a minute!
+## Usage
+There is a [manual](doc/MANUAL.md) that'll get you up and running in a minute!
 
 ## Download
-The plugin itself is just one file named `dayzsrvip.dll`, available via the [releases](https://github.com/dehesselle/dayzsrvip/releases) page. You need the latest 64bit version of [TeamSpeak](http://www.teamspeak.com) (at the time of writing: 3.0.19.4, plugin API v20).
+The plugin itself is just one file named `dayzsrvip.dll`, available as plain `.zip` or `.ts3_plugin` package on the [releases](https://github.com/dehesselle/dayzsrvip/releases) page.  
+You need a recent 64bit version of [TeamSpeak](http://www.teamspeak.com) that provides plugin API v20. Just update to the latest version if you're not there already (at the time of writing: 3.0.19.4) and you're good to go.
 
 ## Build
->TODO documentation
+Building this yourself is pretty straight forward: download and install Visual Studio 2013 and Qt 5.5.1. Open the project `plugin/dayzsrvip.pro` in Qt Creator and start compiling.
 
 ## Known Issues
-Currently none - time to get this prototype tested in the field!
+Currently none - time to get this tested in the field!
 >TODO documentation
 
 ## TODOs

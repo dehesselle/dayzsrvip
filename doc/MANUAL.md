@@ -1,14 +1,15 @@
 # TL;DR - quickstart
-__The detailed user guide is below!__
+:information_source: __The detailed user guide is below!__
 
 So you know your shit and don't want/need me to guide you through?  
 Fine by me - let's go!
+
 1. Copy `dayzsrvip.dll` to your TeaemSpeak's `plugins` folder and enable it.
-- Open its window via `Show` in the `Plugins`, `DayZ Server IP` menu.
-- Click `Open...` to select your `.DayZProfile` file.
-- Join your TeamSpeak server and channel, then click `on`.
-- Have everybody else who you're going to play with go through steps 1-4.
-- Join a DayZ server.
+2. Open its window via `Show` in the `Plugins`, `DayZ Server IP` menu.
+3. Click `Open...` to select your `.DayZProfile` file.
+4. Join your TeamSpeak server and channel, then click `on`.
+5. Have everybody else who you're going to play with go through steps 1-4.
+6. Join a DayZ server.
 
 ![alt-text](png/main_window.png)
 
@@ -25,18 +26,18 @@ You need to put the `dayzsrvip.dll` into TeamSpeak's plugin directory.
 ![alt-text](png/explorer_ts3_folder.png)
 
 ## Enable plugin
-After putting it in the `plugins` folder, start Teamspeak and go to `Settings|Plugins`...
+After putting it in the `plugins` folder, start Teamspeak and go to `Settings`, `Plugins`...
 
 ![alt-text](png/ts3_settings_menu.png)
 
-and enable it.
+...and enable it.
 
 ![alt-text](png/ts3_enable_plugin.png)
 
 If the plugin doesn't show up there, you may need to click the `Reload All` button.
 
 ## Open plugin window
-After having enabled the plugin it will show up in the `Plugins` menu. Since it runs in its own separate window, click on `Show`.
+After having enabled the plugin it will show up in the `Plugins` menu. Since it runs in its own separate window, click on `DayZ Server IP`, `Show`.
 
 ![alt-text](png/ts3_plugins_menu.png)
 
@@ -50,7 +51,7 @@ Most of the upper half of the window is the "local info" section __(1)__. This i
 
 ![alt-text](png/main_window_annotated.png)
 
-The buttons __(3)__ and __(4)__ are to select your `.DayzProfile` file and to turn this thing on and off ;). `on` __(4)__ means that your data will be sent to other clients in your TeamSpeak channel. It's disabled until you have chosen a valid `.DayZProfile` with the `Open...` button __(3)__. While the plugin will remember your profile from now on, it'll always start in `off` mode __(4)__ on purpose.
+The buttons __(3)__ and __(4)__ are to select your `.DayzProfile` file and to turn this thing on and off. `on` __(4)__ means that your data will be sent to other clients in your TeamSpeak channel. It's disabled until you have chosen a valid `.DayZProfile` with the `Open...` button __(3)__. While the plugin will remember your profile from now on, it'll always start in `off` mode __(4)__ on purpose.
 
 The "remote info" section __(2)__ gets updated automatically whenever somebody joins a server. That also means that there won't be any updates in between, while everyone is playing. So if you're late to the party and everybody else has already joined a server, you'll have missed all those initial updates - and that's not good, is it? That's what the `sitrep` button __(5)__ is there for. You can manually request an update message from all other clients to get you started. _(This will probably be automated in the future / connected to a "client has joined the channel" event.)_
 
@@ -59,4 +60,4 @@ The `Clear` button __(6)__ is hopefully self-explanatory, it gets rid of all the
 # How does this work?
 It's not magic, that's for sure!
 
-Whenever there are changes to your `.DayZProfile` file, the plugin gathers server IP, server name and ingame name from it and sends a text message to your current channel in TeamSpeak. Those messages are plain text messages (you could even type them in yourself), but have a specific format so that the plugin can pick up on them. Pretty simple, eh? ;)
+Whenever there are changes to your `.DayZProfile` file, the plugin gathers server IP, server name and ingame name from it and sends a text message to your current channel in TeamSpeak. Those messages are plain text messages (you could even type them in yourself), but have a specific format so that the plugin can pick up on them. Pretty simple, eh? :wink:

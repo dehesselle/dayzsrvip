@@ -38,9 +38,11 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 {
    Q_INIT_RESOURCE(dayzsrvip);
 
+   ui->setupUi(this);
+
    connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
 
-   ui->setupUi(this);
+   ui->pbSitrep->setToolTip("Request update everyone in your channel.");
 
    m_settings.openFile(m_path + "/dayzsrvip.ini");
 
@@ -129,14 +131,14 @@ void DayzServerIp::updateRemoteInfo(QString info,
    LOG(TRACE) << "info(" << info.length() << "): " << info;
 #endif
    QRegExp regex(MSG_STR_SEPARATOR);
-   QStringList infoList = info.split(regex);
+   QStringList infoFields = info.split(regex);
 
-   switch (toMessageType(infoList))
+   switch (toMessageType(infoFields))
    {
       case MessageType::UPDATE_SERVER:
       {
-         infoList.pop_front();   // lose the message ID
-         QString name = infoList.at(0);   // first item is char name
+         infoFields.pop_front();   // lose the message ID
+         QString name = infoFields.at(USMF_INGAME_NAME);
          QList<QStandardItem*> itemList = m_remoteInfo.findItems(name);
 
          switch (itemList.count())
@@ -148,9 +150,9 @@ void DayzServerIp::updateRemoteInfo(QString info,
 #endif
                int row = m_remoteInfo.rowCount();
 
-               for (int i = 0; i < infoList.count(); i++)
+               for (int i = 0; i < infoFields.count(); i++)
                {
-                  QStandardItem* item = new QStandardItem(infoList.at(i));
+                  QStandardItem* item = new QStandardItem(infoFields.at(i));
                   m_remoteInfo.setItem(row, i, item);
                }
                break;
@@ -160,7 +162,7 @@ void DayzServerIp::updateRemoteInfo(QString info,
 #ifndef DAYZSRVIP_LIBRARY
                LOG(TRACE) << "updating item";
 #endif
-               QStandardItem* firstItem = itemList.at(0);
+               QStandardItem* firstItem = itemList.at(USMF_INGAME_NAME);
                int row = firstItem->row();
 
                QList<QStandardItem*> items;
@@ -173,7 +175,7 @@ void DayzServerIp::updateRemoteInfo(QString info,
                firstItem->insertRow(0, items);
 
                for (int col = 1; col < m_remoteInfo.columnCount(); col++)
-                  m_remoteInfo.item(row, col)->setText(infoList.at(col));
+                  m_remoteInfo.item(row, col)->setText(infoFields.at(col));
 
                break;
             }
@@ -191,14 +193,16 @@ void DayzServerIp::updateRemoteInfo(QString info,
                out << info << "\n";
             }
          }
+
+         sortRemoteInfo();
          break;
       }
       case MessageType::RENAME_CHAR:
       {
-         infoList.pop_front();   // lose the message ID
+         infoFields.pop_front();   // lose the message ID
 
-         QString nameOld = infoList.at(0);
-         QString nameNew = infoList.at(1);
+         QString nameOld = infoFields.at(RCMF_NAME_OLD);
+         QString nameNew = infoFields.at(RCMF_NAME_NEW);
 
          QList<QStandardItem*> itemList = m_remoteInfo.findItems(nameOld);
 
@@ -208,18 +212,15 @@ void DayzServerIp::updateRemoteInfo(QString info,
          {
             (*it)->setText(nameNew);
          }
+
+         //sortRemoteInfo();
          break;
       }
+      case MessageType::REQUEST_SITREP:
       case MessageType::INVALID:
       {
          break;
       }
-   }
-
-   if (infoList.at(0) == MSG_STR_UPDATE_SERVER)
-   {
-      m_remoteInfo.sort(ui->tvRemoteInfo->header()->sortIndicatorSection(),
-                        ui->tvRemoteInfo->header()->sortIndicatorOrder());
    }
 }
 
@@ -229,9 +230,9 @@ void DayzServerIp::updateLocalInfo(QStringList info)
    static QString oldServerIp = LOCALINFO_SERVER_IP_INIT;
    static QString oldCharName = LOCALINFO_CHAR_NAME_INIT;
 
-   QString charName = info.at(0);
-   QString serverName = info.at(1);
-   QString serverIp = info.at(2);
+   QString charName = info.at(LIF_INGAME_NAME);
+   QString serverName = info.at(LIF_SERVER_NAME);
+   QString serverIp = info.at(LIF_SERVER_IP);
 
    QString html = ui->tbLocalInfo->toHtml();
    html.replace(oldCharName, charName);
@@ -312,15 +313,16 @@ void DayzServerIp::on_pbRemoteInfoClear_clicked()
 DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& message)
 {
    MessageType result = MessageType::INVALID;
+   int count = message.count() - 1;   // remove message ID
 
    if (message.at(0) == MSG_STR_UPDATE_SERVER)
    {
-      if (message.count() == 5)
+      if (count == USMF_COUNT)
          result = MessageType::UPDATE_SERVER;
    }
    else if (message.at(0) == MSG_STR_RENAME_CHAR)
    {
-      if (message.count() == 3)
+      if (count == RCMF_COUNT)
          result = MessageType::RENAME_CHAR;
    }
    else if (message.at(0) == MSG_STR_REQUEST_SITREP)
@@ -333,15 +335,17 @@ DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& message
 
 void DayzServerIp::setupRemoteInfo()
 {
-   m_remoteInfo.setHorizontalHeaderItem(0, new QStandardItem("Player"));
-   m_remoteInfo.setHorizontalHeaderItem(1, new QStandardItem("Server"));
-   m_remoteInfo.setHorizontalHeaderItem(2, new QStandardItem("IP"));
-   m_remoteInfo.setHorizontalHeaderItem(3, new QStandardItem("Timestamp"));
+   m_remoteInfo.setHorizontalHeaderItem(USMF_INGAME_NAME, new QStandardItem("in-game"));
+   m_remoteInfo.setHorizontalHeaderItem(USMF_TS3_NAME, new QStandardItem("TS3"));
+   m_remoteInfo.setHorizontalHeaderItem(USMF_SERVER_NAME, new QStandardItem("Server"));
+   m_remoteInfo.setHorizontalHeaderItem(USMF_SERVER_IP, new QStandardItem("IP"));
+   m_remoteInfo.setHorizontalHeaderItem(USMF_TIMESTAMP, new QStandardItem("Timestamp"));
    ui->tvRemoteInfo->setModel(&m_remoteInfo);
-   ui->tvRemoteInfo->setColumnWidth(0, 100);
-   ui->tvRemoteInfo->setColumnWidth(1, 200);
-   ui->tvRemoteInfo->setColumnWidth(2, 100);
-   ui->tvRemoteInfo->setColumnWidth(3, 100);
+   ui->tvRemoteInfo->setColumnWidth(USMF_INGAME_NAME, 105);
+   ui->tvRemoteInfo->setColumnWidth(USMF_TS3_NAME, 90);
+   ui->tvRemoteInfo->setColumnWidth(USMF_SERVER_NAME, 180);
+   ui->tvRemoteInfo->setColumnWidth(USMF_SERVER_IP, 90);
+   ui->tvRemoteInfo->setColumnWidth(USMF_TIMESTAMP, 80);
 }
 
 void DayzServerIp::onTs3MessageReceived(const QString &message)
@@ -370,13 +374,13 @@ void DayzServerIp::onTs3MessageReceived(const QString &message)
 
 void DayzServerIp::setStatusMessage(const QString &message)
 {
-   ui->lMessage->setText(QDateTime::currentDateTime().toString("[H:M:s] ") + message);
+   ui->lMessage->setText(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + message);
 }
 
 void DayzServerIp::on_pbSitrep_clicked()
 {
    setStatusMessage("Requesting sitrep from teammates.");
-   requestSendTs3Message(QString(MSG_STR_REQUEST_SITREP) + MSG_STR_SEPARATOR);
+   requestSendTs3Message(MSG_STR_REQUEST_SITREP);
 }
 
 void DayzServerIp::requestSendTs3Message(const QString &message)
@@ -385,4 +389,10 @@ void DayzServerIp::requestSendTs3Message(const QString &message)
       emit sendTs3Message(message);
    else
       setStatusMessage("Not transmitting - still 'off'.");
+}
+
+void DayzServerIp::sortRemoteInfo()
+{
+   m_remoteInfo.sort(ui->tvRemoteInfo->header()->sortIndicatorSection(),
+                     ui->tvRemoteInfo->header()->sortIndicatorOrder());
 }

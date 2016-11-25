@@ -80,11 +80,12 @@ bool Player::importFromFile(QString filename)
 
 QString Player::toMessage()
 {
-   QString result(DayzServerIp::MSG_STR_UPDATE_SERVER);
+   QString result;
    updateTimestamp();
 
-   result += "###"
+   result = QString(DayzServerIp::MSG_STR_UPDATE_SERVER) + "###"
          + m_name + "###"
+         + "TS3NAME_PLACEHOLDER###"
          + m_serverName + "###"
          + m_serverIp + "###"
          + m_timestamp;

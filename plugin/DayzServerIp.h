@@ -37,10 +37,35 @@ public:
       INVALID = 0,
       UPDATE_SERVER,
       RENAME_CHAR,
-      REQUEST_SITREP,
+      REQUEST_SITREP
    };
 
    MessageType toMessageType(const QStringList& message);
+
+   enum USMF   // Update Server Message Fields
+   {
+      USMF_INGAME_NAME = 0,
+      USMF_TS3_NAME,
+      USMF_SERVER_NAME,
+      USMF_SERVER_IP,
+      USMF_TIMESTAMP,
+      USMF_COUNT
+   };
+
+   enum RCMF   // Rename Char Message Fields
+   {
+      RCMF_NAME_OLD = 0,
+      RCMF_NAME_NEW,
+      RCMF_COUNT
+   };
+
+   enum LIF   // Local Info Fields
+   {
+      LIF_INGAME_NAME = 0,
+      LIF_SERVER_NAME,
+      LIF_SERVER_IP,
+      LIF_COUNT
+   };
 
    static const char* MSG_STR_UPDATE_SERVER;
    static const char* MSG_STR_RENAME_CHAR;
@@ -65,6 +90,7 @@ public slots:
 
 private:
    void setupRemoteInfo();
+   void sortRemoteInfo();
    void setStatusMessage(const QString& message);
    void requestSendTs3Message(const QString& message);
 

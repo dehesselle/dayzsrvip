@@ -19,11 +19,26 @@
   <property name="windowTitle">
    <string>DayZ Server IP</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,2,0">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <property name="leftMargin">
+    <number>9</number>
+   </property>
+   <property name="bottomMargin">
+    <number>9</number>
+   </property>
    <item>
     <layout class="QHBoxLayout" name="hlUpper" stretch="0,0">
+     <property name="spacing">
+      <number>6</number>
+     </property>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QGraphicsView" name="gvLogo">
          <property name="sizePolicy">
@@ -42,8 +57,14 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="spacing">
+          <number>0</number>
+         </property>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <item>
             <widget class="QRadioButton" name="rbOn">
              <property name="text">
@@ -82,7 +103,7 @@
        <property name="maximumSize">
         <size>
          <width>16777215</width>
-         <height>132</height>
+         <height>120</height>
         </size>
        </property>
        <property name="html">

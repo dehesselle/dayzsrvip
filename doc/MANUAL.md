@@ -4,7 +4,7 @@
 So you know your shit and don't want/need me to guide you through?  
 Fine by me - let's go!
 
-1. Copy `dayzsrvip.dll` to your TeaemSpeak's `plugins` folder and enable it.
+1. Install the plugin by double-clicking `dayzsrvip.ts3_plugin`. Make sure it's enabled.
 2. Open its window via `Show` in the `Plugins`, `DayZ Server IP` menu.
 3. Click `Open...` to select your `.DayZProfile` file.
 4. Join your TeamSpeak server and channel, then click `on`.
@@ -21,11 +21,20 @@ Just to make sure there's no misunderstanding: you and all your friends need to 
 (If it did, that would be real magic!)
 
 ## Install plugin
+You can choose to install the plugin manually (download the `.zip`) or automatically (download the `.ts3_plugin`).
+
+### automatic installation
+Download and double-click `dayzsrvip.ts3_plugin`. TeamSpeak's plugin installer will open and do anything for you.
+
+![alt-text](png/ts3_plugin_installer.png)
+
+### manual installation
+Download `dayzsrvip_n.n_x64.zip` (`n.n` for the version number) and extract it.
 You need to put the `dayzsrvip.dll` into TeamSpeak's plugin directory.
 
 ![alt-text](png/explorer_ts3_folder.png)
 
-## Enable plugin
+#### Enable plugin
 After putting it in the `plugins` folder, start Teamspeak and go to `Settings`, `Plugins`...
 
 ![alt-text](png/ts3_settings_menu.png)
@@ -41,7 +50,7 @@ After having enabled the plugin it will show up in the `Plugins` menu. Since it 
 
 ![alt-text](png/ts3_plugins_menu.png)
 
-Now you're half way there. This is what it looks like on its first start.
+This is what it looks like on its first start.
 
 ![alt-text](png/main_window_init.png)
 

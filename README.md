@@ -1,5 +1,5 @@
 # DayZ Server IP - TS3 plugin
-![alt-text](/doc/png/main_window.png)
+![alt-text](doc/png/main_window.png)
 ## About
 This plugin can show and automatically distribute and update the IP and name of the server that you're playing on across all your teammates in your channel. No more need to type the IP into the chat yourself or to join via Steam's friendlist.
 

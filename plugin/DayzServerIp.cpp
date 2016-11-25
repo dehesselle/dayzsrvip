@@ -100,7 +100,6 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       updateLocalInfo(m_player.toLocalInfo());
       m_fsWatcher->addPath(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
       ui->rbOn->setEnabled(true);
-      ui->pbRequestSitrep->setEnabled(true);
    }
 }
 

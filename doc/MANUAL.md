@@ -24,13 +24,13 @@ Just to make sure there's no misunderstanding: you and all your friends need to 
 You can choose to install the plugin manually (download the `.zip`) or automatically (download the `.ts3_plugin`).
 
 ### automatic installation
-Download and double-click `dayzsrvip.ts3_plugin`. TeamSpeak's plugin installer will open and do anything for you.
+Download and double-click `dayzsrvip.ts3_plugin`. TeamSpeak's plugin installer will open and do everything for you.
 
 ![alt-text](png/ts3_plugin_installer.png)
 
 ### manual installation
 Download `dayzsrvip_n.n_x64.zip` (`n.n` for the version number) and extract it.
-You need to put the `dayzsrvip.dll` into TeamSpeak's plugin directory.
+You need to put the `dayzsrvip.dll` into TeamSpeak's `plugins` directory.
 
 ![alt-text](png/explorer_ts3_folder.png)
 

@@ -78,7 +78,7 @@ signals:
 private slots:
    void on_pbOpenProfile_clicked();
    void on_pbRemoteInfoClear_clicked();
-   void on_pbSitrep_clicked();
+   void on_pbRequestSitrep_clicked();
 
    void on_rbOn_clicked();
    void on_rbOff_clicked();

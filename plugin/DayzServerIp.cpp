@@ -47,10 +47,19 @@ DayzServerIp::DayzServerIp(QWidget *parent,
    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
    ui->rbOff->setChecked(true);
+   ui->rbOff->setToolTip("stop sending your data to everyone in your channel");
    ui->rbOn->setEnabled(false);
+   ui->rbOn->setToolTip("start sending your data to everyone in your channel");
 
-   ui->pbSitrep->setEnabled(false);
-   ui->pbSitrep->setToolTip("Request update everyone in your channel.");
+   ui->pbRequestSitrep->setEnabled(false);
+   ui->pbRequestSitrep->setToolTip("request everyone to send an update");
+   ui->pbRemoteInfoClear->setToolTip("clear the list");
+   ui->pbOpenProfile->setToolTip("select your DayZ profile file");
+
+   ui->tbLocalInfo->setToolTip("your in-game name, server name and IP");
+   ui->tvRemoteInfo->setToolTip("everyone's name, server name and IP");
+
+   ui->gvLogo->setToolTip("DayZ is the game!");
 
    // show DayZ Logo
    {
@@ -91,7 +100,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       updateLocalInfo(m_player.toLocalInfo());
       m_fsWatcher->addPath(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
       ui->rbOn->setEnabled(true);
-      ui->pbSitrep->setEnabled(true);
+      ui->pbRequestSitrep->setEnabled(true);
    }
 }
 
@@ -295,15 +304,15 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 void DayzServerIp::on_rbOn_clicked()
 {
    ui->pbOpenProfile->setEnabled(false);
-   ui->pbSitrep->setEnabled(true);
-   setStatusMessage("ON");
+   ui->pbRequestSitrep->setEnabled(true);
+   setStatusMessage("meddel on!");
 }
 
 void DayzServerIp::on_rbOff_clicked()
 {
    ui->pbOpenProfile->setEnabled(true);
-   ui->pbSitrep->setEnabled(false);
-   setStatusMessage("OFF");
+   ui->pbRequestSitrep->setEnabled(false);
+   setStatusMessage("meddel off!");
 }
 
 void DayzServerIp::on_pbRemoteInfoClear_clicked()
@@ -379,12 +388,6 @@ void DayzServerIp::setStatusMessage(const QString &message)
    ui->lMessage->setText(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + message);
 }
 
-void DayzServerIp::on_pbSitrep_clicked()
-{
-   setStatusMessage("Requesting sitrep from teammates.");
-   requestSendTs3Message(MSG_STR_REQUEST_SITREP);
-}
-
 void DayzServerIp::requestSendTs3Message(const QString &message)
 {
    if (ui->rbOn->isChecked())
@@ -397,4 +400,10 @@ void DayzServerIp::sortRemoteInfo()
 {
    m_remoteInfo.sort(ui->tvRemoteInfo->header()->sortIndicatorSection(),
                      ui->tvRemoteInfo->header()->sortIndicatorOrder());
+}
+
+void DayzServerIp::on_pbRequestSitrep_clicked()
+{
+   setStatusMessage("Requesting sitrep from teammates.");
+   requestSendTs3Message(MSG_STR_REQUEST_SITREP);
 }

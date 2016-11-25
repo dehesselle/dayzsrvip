@@ -36,13 +36,41 @@ public:
    {
       INVALID = 0,
       UPDATE_SERVER,
-      RENAME_CHAR
+      RENAME_CHAR,
+      REQUEST_SITREP
    };
 
-   MessageType toMessageType(const QStringList& infos);
+   MessageType toMessageType(const QStringList& message);
+
+   enum USMF   // Update Server Message Fields
+   {
+      USMF_INGAME_NAME = 0,
+      USMF_TS3_NAME,
+      USMF_SERVER_NAME,
+      USMF_SERVER_IP,
+      USMF_TIMESTAMP,
+      USMF_COUNT
+   };
+
+   enum RCMF   // Rename Char Message Fields
+   {
+      RCMF_NAME_OLD = 0,
+      RCMF_NAME_NEW,
+      RCMF_COUNT
+   };
+
+   enum LIF   // Local Info Fields
+   {
+      LIF_INGAME_NAME = 0,
+      LIF_SERVER_NAME,
+      LIF_SERVER_IP,
+      LIF_COUNT
+   };
 
    static const char* MSG_STR_UPDATE_SERVER;
    static const char* MSG_STR_RENAME_CHAR;
+   static const char* MSG_STR_REQUEST_SITREP;
+   static const char* MSG_STR_SEPARATOR;
 
 signals:
    void sendTs3Message(QString text);
@@ -50,14 +78,21 @@ signals:
 private slots:
    void on_pbOpenProfile_clicked();
    void on_pbRemoteInfoClear_clicked();
+   void on_pbSitrep_clicked();
 
    void on_rbOn_clicked();
    void on_rbOff_clicked();
 
    void onFsWatcherFileChanged(const QString& path);
 
+public slots:
+   void onTs3MessageReceived(const QString& message);
+
 private:
    void setupRemoteInfo();
+   void sortRemoteInfo();
+   void setStatusMessage(const QString& message);
+   void requestSendTs3Message(const QString& message);
 
    Ui::DayzServerIp *ui;
 

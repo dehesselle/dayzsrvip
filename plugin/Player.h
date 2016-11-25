@@ -24,6 +24,11 @@ public:
    QString m_serverName;
    QString m_serverIp;
    QString m_timestamp;
+
+private:
+   void updateTimestamp();
+
+   QString m_filename;
 };
 
 #endif // PLAYER_H

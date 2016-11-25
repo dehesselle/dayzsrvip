@@ -1,4 +1,19 @@
+# TL;DR - quickstart
+__The detailed user guide is below!__
+
+So you know your shit and don't want/need me to guide you through?  
+Fine by me - let's go!
+1. Copy `dayzsrvip.dll` to your TeaemSpeak's `plugins` folder and enable it.
+- Open its window via `Show` in the `Plugins`, `DayZ Server IP` menu.
+- Click `Open...` to select your `.DayZProfile` file.
+- Join your TeamSpeak server and channel, then click `on`.
+- Have everybody else who you're going to play with go through steps 1-4.
+- Join a DayZ server.
+
+![alt-text](png/main_window.png)
+
 # DayZ Server IP - user guide
+
 Follow these few steps and you'll be up and running in a few minutes!
 
 Just to make sure there's no misunderstanding: you and all your friends need to install and use this plugin, it doesn't work own its own!
@@ -29,24 +44,19 @@ Now you're half way there. This is what it looks like on its first start.
 
 ![alt-text](png/main_window_init.png)
 
-### Description
-Most of the upper half of the window is the "local info" section __(1)__. This is where your own ingame name, server name and IP are shown. The lower half is the "remote info" section __(2)__. It shows everybody else's ingame name, server name and server IP along with a timestamp to indicate when the last update was received. If this view gets to cluttered, you can clear it by clicking the `Clear` button __(6)__. (Right now this is only temporary and the complete history will reapper when the plugin is restarted.)
+## Description
 
-### Usage
-You have to click the `Open...` button __(3)__ to select your `.DayZProfile` file that will be used to gather your data. Once you've selected a valid profile, the radiobuttons on the left side __(4)__ become active (well, the `on` button does). If you select `on` the plugin will start to send your data via text messages to the TeamSpeak channel. But since only updates are sent, you can manually request an update by clicking the `sitrep` button __(5)__. (This will probably be automated in the future.)
+Most of the upper half of the window is the "local info" section __(1)__. This is where your own ingame name, server name and IP are shown. The lower half is the "remote info" section __(2)__. It shows everybody else's ingame name, server name and server IP along with a timestamp to indicate when the last update was received.
 
 ![alt-text](png/main_window_annotated.png)
 
-## Now what?
-- Click on `Open...` and select your `.DayZProfile` file. The dialog should have already placed you inside of your `Documents/DayZ` folder to ease up the task.
-- The placeholders like `___CHAR_NAME___` and the likes will now be replaced by the data that was gathered from your `.DayZProfile` file.
-- Join a TeamSpeak server, click the radio button `on` and you'll be distributing your server connection data to the TeamSpeak channel.
+The buttons __(3)__ and __(4)__ are to select your `.DayzProfile` file and to turn this thing on and off ;). `on` __(4)__ means that your data will be sent to other clients in your TeamSpeak channel. It's disabled until you have chosen a valid `.DayZProfile` with the `Open...` button __(3)__. While the plugin will remember your profile from now on, it'll always start in `off` mode __(4)__ on purpose.
 
-If everything works as intended you'll now be able to see your and your teammates data.
+The "remote info" section __(2)__ gets updated automatically whenever somebody joins a server. That also means that there won't be any updates in between, while everyone is playing. So if you're late to the party and everybody else has already joined a server, you'll have missed all those initial updates - and that's not good, is it? That's what the `sitrep` button __(5)__ is there for. You can manually request an update message from all other clients to get you started. _(This will probably be automated in the future / connected to a "client has joined the channel" event.)_
 
-![alt-text](png/main_window.png)
+The `Clear` button __(6)__ is hopefully self-explanatory, it gets rid of all the data in the "remote info" __(2)__ section. Note that this clears the view only temporarily - since the history is also saved on disk, it will all be there again the next time the plugin is started, i.e. when you restart TeamSpeak or disable/reenable the plugin. _(This behaviour will change in the future.)_
 
-## How does this work?
+# How does this work?
 It's not magic, that's for sure!
 
 Whenever there are changes to your `.DayZProfile` file, the plugin gathers server IP, server name and ingame name from it and sends a text message to your current channel in TeamSpeak. Those messages are plain text messages (you could even type them in yourself), but have a specific format so that the plugin can pick up on them. Pretty simple, eh? ;)

@@ -42,14 +42,15 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
    connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
 
-   ui->pbSitrep->setToolTip("Request update everyone in your channel.");
-
    m_settings.openFile(m_path + "/dayzsrvip.ini");
 
    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
    ui->rbOff->setChecked(true);
    ui->rbOn->setEnabled(false);
+
+   ui->pbSitrep->setEnabled(false);
+   ui->pbSitrep->setToolTip("Request update everyone in your channel.");
 
    // show DayZ Logo
    {
@@ -90,6 +91,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       updateLocalInfo(m_player.toLocalInfo());
       m_fsWatcher->addPath(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
       ui->rbOn->setEnabled(true);
+      ui->pbSitrep->setEnabled(true);
    }
 }
 

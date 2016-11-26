@@ -20,6 +20,7 @@
 #include <QMessageBox>
 #include "Version.h"
 #include "Log.h"
+#include "DebugDialog.h"
 
 static const char* LOCALINFO_SERVER_INIT = "___SERVER_NAME___";
 static const char* LOCALINFO_SERVER_IP_INIT = "___SERVER_IP___";
@@ -51,11 +52,18 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->rbOn->setEnabled(false);
       ui->rbOn->setToolTip("start sending your data to everyone in your channel");
 
-      ui->pbRequestSitrep->setEnabled(false);
-      ui->pbRequestSitrep->setToolTip("request everyone to send an update");
+      ui->pbSitrepRequest->setEnabled(false);
+      ui->pbSitrepRequest->setToolTip("request everyone to send an update");
       ui->pbRemoteInfoClear->setToolTip("clear the list");
-      ui->pbOpenProfile->setToolTip("select your DayZ profile file");
-      ui->pbOpenLog->setToolTip("open TeamSpeak log");
+      ui->pbProfileOpen->setToolTip("select your DayZ profile file");
+      ui->pbLogOpen->setToolTip("open TeamSpeak log");
+
+#ifdef DEVELOPER_MODE
+      ui->pbDebugOpen->setEnabled(true);
+#else
+      ui->pbDebugOpen->setEnabled(false);
+      ui->pbDebugOpen->setToolTip("sorry - developer only :)");
+#endif
 
       ui->gvLogo->setToolTip("DayZ is the game!");
 
@@ -69,16 +77,9 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
    connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
 
-
-
    // show DayZ Logo
    {
-#ifdef QT_DEBUG
-      // this enables the 'DebugDialog': left-click on the DayZ-Logo ('gvLogo')
-      m_scene = new GraphicsScene(this);
-#else
       m_scene = new QGraphicsScene(this);
-#endif
       m_scene->addPixmap(QPixmap(":/dayzlogo"));
       ui->gvLogo->setScene(m_scene);
    }
@@ -136,49 +137,6 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 DayzServerIp::~DayzServerIp()
 {
    delete ui;
-}
-
-void DayzServerIp::on_pbOpenProfile_clicked()
-{
-   QString dayzProfile =
-         QFileDialog::getOpenFileName(this,
-                                      "Open DayZ Profile",
-                                      QStandardPaths::locate(QStandardPaths::DocumentsLocation,
-                                                             QString(),
-                                                             QStandardPaths::LocateDirectory) + "/DayZ",
-                                      "DayZ Profile (*.DayZProfile)");
-
-   if (QFile::exists(dayzProfile))
-   {
-      if (m_player.importFromFile(dayzProfile))
-      {
-         m_settings.setValue(Player::INI_DAYZ_PROFILE, dayzProfile);
-
-         if (m_player.m_isChanged)
-            updateLocalInfo(m_player.toLocalInfo());
-
-         if (m_fsWatcher->files().count())
-            m_fsWatcher->removePaths(m_fsWatcher->files());
-
-         m_fsWatcher->addPath(dayzProfile);
-         ui->rbOn->setEnabled(true);
-      }
-      else
-      {
-         QMessageBox::critical(this,
-                               "invalid profile",
-                               "This DayZProfile cannot be used!\n\n"
-                               "The most likely cause for this error is \n"
-                               "not having set a character name in DayZ.");
-         ui->rbOn->setEnabled(false);
-         m_fsWatcher->removePaths(m_fsWatcher->files());
-      }
-   }
-   else   // file dialog has been cancelled
-   {
-      ui->rbOn->setEnabled(false);
-      m_fsWatcher->removePaths(m_fsWatcher->files());
-   }
 }
 
 void DayzServerIp::updateRemoteInfo(QString info,
@@ -336,15 +294,15 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 
 void DayzServerIp::on_rbOn_clicked()
 {
-   ui->pbOpenProfile->setEnabled(false);
-   ui->pbRequestSitrep->setEnabled(true);
+   ui->pbProfileOpen->setEnabled(false);
+   ui->pbSitrepRequest->setEnabled(true);
    setStatusMessage("meddel on!");
 }
 
 void DayzServerIp::on_rbOff_clicked()
 {
-   ui->pbOpenProfile->setEnabled(true);
-   ui->pbRequestSitrep->setEnabled(false);
+   ui->pbProfileOpen->setEnabled(true);
+   ui->pbSitrepRequest->setEnabled(false);
    setStatusMessage("meddel off!");
 }
 
@@ -355,6 +313,7 @@ void DayzServerIp::on_pbRemoteInfoClear_clicked()
 
    m_remoteInfo.clear();
    setupRemoteInfo();
+   setStatusMessage("cleared all data");
 }
 
 DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& message)
@@ -445,12 +404,6 @@ void DayzServerIp::sortRemoteInfo()
                      ui->tvRemoteInfo->header()->sortIndicatorOrder());
 }
 
-void DayzServerIp::on_pbRequestSitrep_clicked()
-{
-   setStatusMessage("Requesting sitrep from teammates.");
-   requestSendTs3Message(MSG_STR_REQUEST_SITREP);
-}
-
 void DayzServerIp::saveRemoteInfo(const QString &text)
 {
    QFile history(m_remoteInfoFile);
@@ -466,7 +419,30 @@ void DayzServerIp::saveRemoteInfo(const QString &text)
    }
 }
 
-void DayzServerIp::on_pbOpenLog_clicked()
+void DayzServerIp::checkVersionNo()   // handle plugin updates
+{
+   QString versionFromFile = m_settings.value(INI_VERSION_NO).toString();
+
+   if (versionFromFile != DAYZSERVERIP_VERSION)
+   {
+      if (QFile::remove(m_remoteInfoFile))
+      {
+         logInfo("version change: deleted history due to version change");
+         m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
+      }
+      else
+      {
+         logError("version change: failed to remove history file "
+                  + m_remoteInfoFile);
+      }
+   }
+   else
+   {
+      logDebug("version ok");
+   }
+}
+
+void DayzServerIp::on_pbLogOpen_clicked()
 {
    QDir logDir(m_path + "/logs");
    QString currentLog = logDir.entryList(QStringList() << "*.log",
@@ -505,25 +481,57 @@ void DayzServerIp::on_pbOpenLog_clicked()
    }
 }
 
-void DayzServerIp::checkVersionNo()   // handle plugin updates
+void DayzServerIp::on_pbProfileOpen_clicked()
 {
-   QString versionFromFile = m_settings.value(INI_VERSION_NO).toString();
+   QString dayzProfile =
+         QFileDialog::getOpenFileName(this,
+                                      "Open DayZ Profile",
+                                      QStandardPaths::locate(QStandardPaths::DocumentsLocation,
+                                                             QString(),
+                                                             QStandardPaths::LocateDirectory) + "/DayZ",
+                                      "DayZ Profile (*.DayZProfile)");
 
-   if (versionFromFile != DAYZSERVERIP_VERSION)
+   if (QFile::exists(dayzProfile))
    {
-      if (QFile::remove(m_remoteInfoFile))
+      if (m_player.importFromFile(dayzProfile))
       {
-         logInfo("version change: deleted history due to version change");
-         m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
+         m_settings.setValue(Player::INI_DAYZ_PROFILE, dayzProfile);
+
+         if (m_player.m_isChanged)
+            updateLocalInfo(m_player.toLocalInfo());
+
+         if (m_fsWatcher->files().count())
+            m_fsWatcher->removePaths(m_fsWatcher->files());
+
+         m_fsWatcher->addPath(dayzProfile);
+         ui->rbOn->setEnabled(true);
       }
       else
       {
-         logError("version change: failed to remove history file "
-                  + m_remoteInfoFile);
+         QMessageBox::critical(this,
+                               "invalid profile",
+                               "This DayZProfile cannot be used!\n\n"
+                               "The most likely cause for this error is \n"
+                               "not having set a character name in DayZ.");
+         ui->rbOn->setEnabled(false);
+         m_fsWatcher->removePaths(m_fsWatcher->files());
       }
    }
-   else
+   else   // file dialog has been cancelled
    {
-      logDebug("version ok");
+      ui->rbOn->setEnabled(false);
+      m_fsWatcher->removePaths(m_fsWatcher->files());
    }
+}
+
+void DayzServerIp::on_pbSitrepRequest_clicked()
+{
+   setStatusMessage("Requesting sitrep from teammates.");
+   requestSendTs3Message(MSG_STR_REQUEST_SITREP);
+}
+
+void DayzServerIp::on_pbDebugOpen_clicked()
+{
+   DebugDialog* debugDialog = new DebugDialog(this);
+   debugDialog->show();
 }

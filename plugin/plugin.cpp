@@ -191,6 +191,10 @@ int ts3plugin_init()
            + DAYZSERVERIP_VERSION
            + QString(")"));
 
+#ifdef DEVELOPER_MODE
+   logWarning("****** DEVELOPER_MODE ******");
+#endif
+
    char configPath[PATH_BUFSIZE];
    ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
 

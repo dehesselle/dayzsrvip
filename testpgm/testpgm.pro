@@ -15,14 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
     ../plugin/DayzServerIp.cpp \
     ../plugin/DebugDialog.cpp \
-    ../plugin/GraphicsScene.cpp \
     ../plugin/IniFile.cpp \
     ../plugin/Player.cpp \
     ../plugin/Log.cpp
 
 HEADERS  += ../plugin/DayzServerIp.h \
     ../plugin/DebugDialog.h \
-    ../plugin/GraphicsScene.h \
     ../plugin/IniFile.h \
     ../plugin/Log.h \
     ../plugin/Player.h \

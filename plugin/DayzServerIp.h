@@ -12,9 +12,9 @@
 #include <QStringList>
 #include <QString>
 #include <QFileSystemWatcher>
+#include <QGraphicsScene>
 #include "IniFile.h"
 #include "Player.h"
-#include "GraphicsScene.h"   // also includes QGraphicsScene
 
 namespace Ui {
 class DayzServerIp;
@@ -78,16 +78,15 @@ signals:
    void sendTs3Message(QString text);
 
 private slots:
-   void on_pbOpenProfile_clicked();
-   void on_pbRemoteInfoClear_clicked();
-   void on_pbRequestSitrep_clicked();
-
-   void on_rbOn_clicked();
+   void on_pbDebugOpen_clicked();
+   void on_pbLogOpen_clicked();
    void on_rbOff_clicked();
+   void on_rbOn_clicked();
+   void on_pbProfileOpen_clicked();
+   void on_pbRemoteInfoClear_clicked();
+   void on_pbSitrepRequest_clicked();
 
    void onFsWatcherFileChanged(const QString& path);
-
-   void on_pbOpenLog_clicked();
 
 public slots:
    void onTs3MessageReceived(const QString& message);
@@ -102,11 +101,7 @@ private:
 
    Ui::DayzServerIp *ui;
 
-#ifdef QT_DEBUG
-   GraphicsScene*  m_scene;
-#else
    QGraphicsScene* m_scene;
-#endif
 
    QStandardItemModel m_remoteInfo;
    QString m_remoteInfoFile;   // historical data

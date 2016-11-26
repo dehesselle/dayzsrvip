@@ -22,6 +22,7 @@ void setTs3FunctionsForLog(const struct TS3Functions funcs);
 
 void logDebug(QString message);
 void logInfo(QString message);
+void logWarning(QString message);
 void logError(QString message);
 
 #endif // LOG_H

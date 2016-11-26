@@ -82,7 +82,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="pbOpenProfile">
+          <widget class="QPushButton" name="pbProfileOpen">
            <property name="text">
             <string>Open...</string>
            </property>
@@ -151,7 +151,7 @@ p, li { white-space: pre-wrap; }
         <number>0</number>
        </property>
        <item>
-        <widget class="QPushButton" name="pbRequestSitrep">
+        <widget class="QPushButton" name="pbSitrepRequest">
          <property name="maximumSize">
           <size>
            <width>60</width>
@@ -177,7 +177,20 @@ p, li { white-space: pre-wrap; }
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="pbOpenLog">
+        <widget class="QPushButton" name="pbDebugOpen">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Debug...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pbLogOpen">
          <property name="maximumSize">
           <size>
            <width>60</width>

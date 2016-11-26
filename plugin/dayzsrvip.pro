@@ -9,14 +9,12 @@ QT       += widgets
 TARGET = dayzsrvip
 TEMPLATE = lib
 
-DEFINES += DAYZSRVIP_LIBRARY \
-   ELPP_DISABLE_LOGS
+DEFINES += DAYZSRVIP_LIBRARY
 
 SOURCES += plugin.cpp \
     DayzServerIp.cpp \
     IniFile.cpp \
     Player.cpp \
-    GraphicsScene.cpp \
     DebugDialog.cpp \
     Log.cpp
 
@@ -27,7 +25,6 @@ HEADERS += plugin.h\
     Log.h \
     Player.h \
     Version.h \
-    GraphicsScene.h \
     DebugDialog.h
 
 INCLUDEPATH += $$PWD/../ts3psdk/include

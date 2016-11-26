@@ -72,6 +72,8 @@ public:
    static const char* MSG_STR_REQUEST_SITREP;
    static const char* MSG_STR_SEPARATOR;
 
+   static const IniFile::KeyValue INI_VERSION_NO;
+
 signals:
    void sendTs3Message(QString text);
 
@@ -96,6 +98,7 @@ private:
    void saveRemoteInfo(const QString& text);
    void setStatusMessage(const QString& message);
    void requestSendTs3Message(const QString& message);
+   void checkVersionNo();
 
    Ui::DayzServerIp *ui;
 
@@ -106,6 +109,7 @@ private:
 #endif
 
    QStandardItemModel m_remoteInfo;
+   QString m_remoteInfoFile;   // historical data
 
    IniFile m_settings;
 

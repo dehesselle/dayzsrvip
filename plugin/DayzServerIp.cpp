@@ -30,6 +30,8 @@ const char* DayzServerIp::MSG_STR_RENAME_CHAR = "[dayzsrvip|char]";
 const char* DayzServerIp::MSG_STR_REQUEST_SITREP = "[dayzsrvip|sitrep]";
 const char* DayzServerIp::MSG_STR_SEPARATOR = "###";
 
+const IniFile::KeyValue DayzServerIp::INI_VERSION_NO = { "DayzServerIp/version", "" };
+
 DayzServerIp::DayzServerIp(QWidget *parent,
                            const QString& configPath) :
    QDialog(parent),
@@ -40,27 +42,33 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 {
    Q_INIT_RESOURCE(dayzsrvip);
 
-   ui->setupUi(this);
+   // UI setup
+   {
+      ui->setupUi(this);
 
-   connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
+      ui->rbOff->setChecked(true);
+      ui->rbOff->setToolTip("stop sending your data to everyone in your channel");
+      ui->rbOn->setEnabled(false);
+      ui->rbOn->setToolTip("start sending your data to everyone in your channel");
+
+      ui->pbRequestSitrep->setEnabled(false);
+      ui->pbRequestSitrep->setToolTip("request everyone to send an update");
+      ui->pbRemoteInfoClear->setToolTip("clear the list");
+      ui->pbOpenProfile->setToolTip("select your DayZ profile file");
+      ui->pbOpenLog->setToolTip("open TeamSpeak log");
+
+      ui->gvLogo->setToolTip("DayZ is the game!");
+   }
 
    logDebug("m_settings.openFile()");
    m_settings.openFile(m_path + "/dayzsrvip.ini");
+   m_remoteInfoFile = m_path + "/dayzsrvip.hst";
+   checkVersionNo();   // this has to called ASAP to handle version changes
+
+   connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
 
    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-   ui->rbOff->setChecked(true);
-   ui->rbOff->setToolTip("stop sending your data to everyone in your channel");
-   ui->rbOn->setEnabled(false);
-   ui->rbOn->setToolTip("start sending your data to everyone in your channel");
-
-   ui->pbRequestSitrep->setEnabled(false);
-   ui->pbRequestSitrep->setToolTip("request everyone to send an update");
-   ui->pbRemoteInfoClear->setToolTip("clear the list");
-   ui->pbOpenProfile->setToolTip("select your DayZ profile file");
-   ui->pbOpenLog->setToolTip("open TeamSpeak log");
-
-   ui->gvLogo->setToolTip("DayZ is the game!");
 
    // show DayZ Logo
    {
@@ -79,7 +87,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
    // import history from file
    {
-      QFile history(m_path + "/dayzsrvip.hst");
+      QFile history(m_remoteInfoFile);
 
       if (history.open(QFile::ReadOnly))
       {
@@ -350,10 +358,8 @@ void DayzServerIp::on_rbOff_clicked()
 
 void DayzServerIp::on_pbRemoteInfoClear_clicked()
 {
-   QString history = m_path + "/dayzsrvip.hst";
-
-   if (! QFile::remove(history))
-      logError("failed to remove history file: " + history);
+   if (! QFile::remove(m_remoteInfoFile))
+      logError("failed to remove history file: " + m_remoteInfoFile);
 
    m_remoteInfo.clear();
    setupRemoteInfo();
@@ -455,7 +461,7 @@ void DayzServerIp::on_pbRequestSitrep_clicked()
 
 void DayzServerIp::saveRemoteInfo(const QString &text)
 {
-   QFile history(m_path + "/dayzsrvip.hst");
+   QFile history(m_remoteInfoFile);
 
    if (history.open(QFile::Append))
    {
@@ -504,5 +510,28 @@ void DayzServerIp::on_pbOpenLog_clicked()
                                "log not found",
                                "It looks like there is no log.",
                                QMessageBox::Ok);
+   }
+}
+
+void DayzServerIp::checkVersionNo()   // handle plugin updates
+{
+   QString versionFromFile = m_settings.value(INI_VERSION_NO).toString();
+
+   if (versionFromFile != DAYZSERVERIP_VERSION)
+   {
+      if (QFile::remove(m_remoteInfoFile))
+      {
+         logInfo("version change: deleted history due to version change");
+         m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
+      }
+      else
+      {
+         logError("version change: failed to remove history file "
+                  + m_remoteInfoFile);
+      }
+   }
+   else
+   {
+      logDebug("version ok");
    }
 }

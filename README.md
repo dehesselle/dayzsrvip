@@ -10,15 +10,18 @@ This plugin can show and automatically distribute and update the IP and name of 
 There is a [manual](doc/MANUAL.md) that'll get you up and running in a minute!
 
 ## Download
-The plugin itself is just one file named `dayzsrvip.dll`, available as plain `.zip` or `.ts3_plugin` package on the [releases](https://github.com/dehesselle/dayzsrvip/releases) page.  
+
+The plugin itself is just one file named `dayzsrvip.dll`, packaged as `.ts3_plugin` and available on the [releases](https://github.com/dehesselle/dayzsrvip/releases) page. If you prefer the plain DLL, rename the `.ts3_plugin` to `.zip` and get it from there.
+##### Requirements
 You need a recent 64bit version of [TeamSpeak](http://www.teamspeak.com) that provides plugin API v20. Just update to the latest version if you're not there already (at the time of writing: 3.0.19.4) and you're good to go.
 
 ## Build
-Building this yourself is pretty straight forward: download and install Visual Studio 2013 and Qt 5.5.1. Open the project `plugin/dayzsrvip.pro` in Qt Creator and start compiling.
+Building this yourself is pretty straight forward. Download and install Visual Studio 2013 and Qt 5.5.1. Open Qt Creator. Open the project `plugin/dayzsrvip.pro`. Start compiling.
 
 ## Known Issues
-Currently none - time to get this tested in the field!
->TODO documentation
+This project is still under heavy development and needs testing - there will be bugs!
+- players with the same in-game name will mess things up
+- documentation is not up to par with current release (sorry - things are happening really fast now and fixing bugs for the people who take the time to test this is way more important)
 
 ## TODOs
 - documentation
@@ -29,4 +32,3 @@ Currently none - time to get this tested in the field!
 - [TeamSpeak](http://http://www.teamspeak.com)
 - [Visual Studio](https://www.visualstudio.com)
 - [Qt](https://www.qt.io)
-- [Easylogging++](https://github.com/easylogging/easyloggingpp)

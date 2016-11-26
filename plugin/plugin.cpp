@@ -24,6 +24,7 @@
 #include "DayzServerIp.h"
 #include "Version.h"
 #include <QString>
+#include "Log.h"
 //------------------------------------------------------------------------------
 
 static struct TS3Functions ts3Functions;
@@ -124,11 +125,6 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
    {
    }
 }
-
-void logInfo(QString message)
-{
-   ts3Functions.logMessage(message.toStdString().c_str(), LogLevel_INFO, "dayzsrvip", 0);
-}
 //------------------------------------------------------------------------------
 
 /*********************************** Required functions ************************************/
@@ -180,6 +176,7 @@ const char* ts3plugin_description() {
 /* Set TeamSpeak 3 callback functions */
 void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
     ts3Functions = funcs;
+    setTs3FunctionsForLog(funcs);
 }
 
 /*

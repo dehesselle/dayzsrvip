@@ -14,6 +14,8 @@
 class Player
 {
 public:
+   Player();
+
    static const IniFile::KeyValue INI_DAYZ_PROFILE;
 
    bool importFromFile(QString filename);
@@ -25,8 +27,15 @@ public:
    QString m_serverIp;
    QString m_timestamp;
 
+   bool m_isChanged;
+
 private:
    void updateTimestamp();
+   void updateChanged();
+
+   QString m_nameOld;
+   QString m_serverNameOld;
+   QString m_serverIpOld;
 
    QString m_filename;
 };

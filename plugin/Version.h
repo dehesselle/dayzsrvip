@@ -7,7 +7,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define DAYZSERVERIP_VERSION "0.2"
+#define DAYZSERVERIP_VERSION "0.3"
 
 #endif // VERSION_H
 

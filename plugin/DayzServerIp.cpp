@@ -14,8 +14,10 @@
 #include <QRegExp>
 #include <QList>
 #include <QThread>
-#include <QMessageBox>
 #include <QDateTime>
+#include <QProcess>
+#include <QDir>
+#include <QMessageBox>
 #include "Version.h"
 #include "Log.h"
 
@@ -42,6 +44,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
    connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
 
+   logDebug("m_settings.openFile()");
    m_settings.openFile(m_path + "/dayzsrvip.ini");
 
    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -55,9 +58,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
    ui->pbRequestSitrep->setToolTip("request everyone to send an update");
    ui->pbRemoteInfoClear->setToolTip("clear the list");
    ui->pbOpenProfile->setToolTip("select your DayZ profile file");
-
-   ui->tbLocalInfo->setToolTip("your in-game name, server name and IP");
-   ui->tvRemoteInfo->setToolTip("everyone's name, server name and IP");
+   ui->pbOpenLog->setToolTip("open TeamSpeak log");
 
    ui->gvLogo->setToolTip("DayZ is the game!");
 
@@ -73,6 +74,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->gvLogo->setScene(m_scene);
    }
 
+   logDebug("setupRemoteInfo()");
    setupRemoteInfo();   // setup columns in treeview
 
    // import history from file
@@ -81,6 +83,8 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
       if (history.open(QFile::ReadOnly))
       {
+         logDebug("importing history from: " + history.fileName());
+
          QTextStream in(&history);
 
          while (! in.atEnd())
@@ -89,17 +93,34 @@ DayzServerIp::DayzServerIp(QWidget *parent,
             updateRemoteInfo(line, false);
          }
       }
+      else
+      {
+         logDebug("no history to import");
+      }
    }
 
    setStatusMessage(QString("Welcome! This is version ")
                     + DAYZSERVERIP_VERSION
                     + QString("."));
 
-   if (m_player.importFromFile(m_settings.value(Player::INI_DAYZ_PROFILE).toString()))
    {
-      updateLocalInfo(m_player.toLocalInfo());
-      m_fsWatcher->addPath(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
-      ui->rbOn->setEnabled(true);
+      QString dayzProfile = m_settings.value(Player::INI_DAYZ_PROFILE).toString();
+
+      if (QFile::exists(dayzProfile))
+      {
+         if (m_player.importFromFile(dayzProfile))
+         {
+            updateLocalInfo(m_player.toLocalInfo());
+            m_fsWatcher->addPath(dayzProfile);
+            ui->rbOn->setEnabled(true);
+         }
+         // no 'else': we don't treat this as error here while still
+         // constructing; m_player will have logged an error though
+      }
+      else
+      {
+         logInfo("profile does not exist (not an error at this point): " + dayzProfile);
+      }
    }
 }
 
@@ -110,7 +131,7 @@ DayzServerIp::~DayzServerIp()
 
 void DayzServerIp::on_pbOpenProfile_clicked()
 {
-   QString filename =
+   QString dayzProfile =
          QFileDialog::getOpenFileName(this,
                                       "Open DayZ Profile",
                                       QStandardPaths::locate(QStandardPaths::DocumentsLocation,
@@ -118,24 +139,41 @@ void DayzServerIp::on_pbOpenProfile_clicked()
                                                              QStandardPaths::LocateDirectory) + "/DayZ",
                                       "DayZ Profile (*.DayZProfile)");
 
-
-   if (m_player.importFromFile(filename))
+   if (QFile::exists(dayzProfile))
    {
-      m_settings.setValue(Player::INI_DAYZ_PROFILE, filename);
-      updateLocalInfo(m_player.toLocalInfo());
-
-      if (m_fsWatcher->files().count())
+      if (m_player.importFromFile(dayzProfile))
       {
-         m_fsWatcher->removePaths(m_fsWatcher->files());
-         m_fsWatcher->addPath(filename);
-      }
+         m_settings.setValue(Player::INI_DAYZ_PROFILE, dayzProfile);
 
-      ui->rbOn->setEnabled(true);
+         if (m_player.m_isChanged)
+            updateLocalInfo(m_player.toLocalInfo());
+
+         if (m_fsWatcher->files().count())
+            m_fsWatcher->removePaths(m_fsWatcher->files());
+
+         m_fsWatcher->addPath(dayzProfile);
+         ui->rbOn->setEnabled(true);
+      }
+      else
+      {
+         QMessageBox::critical(this,
+                               "invalid profile",
+                               "This DayZProfile cannot be used!\n\n"
+                               "The most likely cause for this error is \n"
+                               "not having set a character name in DayZ.");
+         ui->rbOn->setEnabled(false);
+         m_fsWatcher->removePaths(m_fsWatcher->files());
+      }
+   }
+   else   // file dialog has been cancelled
+   {
+      ui->rbOn->setEnabled(false);
+      m_fsWatcher->removePaths(m_fsWatcher->files());
    }
 }
 
 void DayzServerIp::updateRemoteInfo(QString info,
-                                    bool saveHistory)
+                                    bool saveInfo)
 {
 #ifndef DAYZSRVIP_LIBRARY
    LOG(TRACE) << "info(" << info.length() << "): " << info;
@@ -193,18 +231,9 @@ void DayzServerIp::updateRemoteInfo(QString info,
                break;
          }
 
-         if (saveHistory)
-         {
-            QFile history(m_path + "/dayzsrvip.hst");
-
-            if (history.open(QFile::Append))
-            {
-               QTextStream out(&history);
-               out << info << "\n";
-            }
-         }
-
          sortRemoteInfo();
+         if (saveInfo)
+            saveRemoteInfo(info);
          break;
       }
       case MessageType::RENAME_CHAR:
@@ -283,21 +312,26 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 
    if (count > 5)
    {
-#ifndef DAYZSRVIP_LIBRARY
-      LOG(ERROR) << "unable to import after " << count << " attempts";
-#endif
-      QMessageBox::critical(this,
-                            "read error", "Unable to read DayZ Profile.",
-                            QMessageBox::Ok);
+      logError("unable to import DayZProfile after 5 attempts");
+   }
+   else
+   {
+//      logDebug("import count = " + QString::number(count));
    }
 
    if (! m_fsWatcher->files().count())
       m_fsWatcher->addPath(path);
 
-   updateLocalInfo(m_player.toLocalInfo());
+   if (m_player.m_isChanged)
+   {
+      updateLocalInfo(m_player.toLocalInfo());
 
-   requestSendTs3Message(m_player.toMessage());
-   setStatusMessage("Sent update to teammates.");
+      if (ui->rbOn->isChecked())
+      {
+         requestSendTs3Message(m_player.toMessage());
+         setStatusMessage("Sent update to teammates.");
+      }
+   }
 }
 
 void DayzServerIp::on_rbOn_clicked()
@@ -316,6 +350,11 @@ void DayzServerIp::on_rbOff_clicked()
 
 void DayzServerIp::on_pbRemoteInfoClear_clicked()
 {
+   QString history = m_path + "/dayzsrvip.hst";
+
+   if (! QFile::remove(history))
+      logError("failed to remove history file: " + history);
+
    m_remoteInfo.clear();
    setupRemoteInfo();
 }
@@ -374,8 +413,15 @@ void DayzServerIp::onTs3MessageReceived(const QString &message)
          setStatusMessage("Teammate changed name.");
          break;
       case MessageType::REQUEST_SITREP:
-         setStatusMessage("Request for sitrep received.");
-         emit sendTs3Message(m_player.toMessage());
+         if (ui->rbOn->isChecked())
+         {
+            setStatusMessage("Responding to request for sitrep.");
+            emit sendTs3Message(m_player.toMessage());
+         }
+         else
+         {
+            setStatusMessage("Ignoring request for sitrep (we're still OFF).");
+         }
          break;
       case MessageType::INVALID:
          break;
@@ -405,4 +451,58 @@ void DayzServerIp::on_pbRequestSitrep_clicked()
 {
    setStatusMessage("Requesting sitrep from teammates.");
    requestSendTs3Message(MSG_STR_REQUEST_SITREP);
+}
+
+void DayzServerIp::saveRemoteInfo(const QString &text)
+{
+   QFile history(m_path + "/dayzsrvip.hst");
+
+   if (history.open(QFile::Append))
+   {
+      QTextStream out(&history);
+      out << text << "\n";
+   }
+   else
+   {
+      logError("failed to write history: " + history.fileName());
+   }
+}
+
+void DayzServerIp::on_pbOpenLog_clicked()
+{
+   QDir logDir(m_path + "/logs");
+   QString currentLog = logDir.entryList(QStringList() << "*.log",
+                                         QDir::Files,
+                                         QDir::Time).at(0);
+
+   if (! currentLog.isEmpty())
+   {
+      // We need to recreate the file with CRLF so we can
+      // open it with notepad.exe
+      currentLog = logDir.path() + "/" + currentLog;
+      QFile fileIn(currentLog);
+      QFile fileOut(currentLog + ".txt");
+
+      if (fileIn.open(QFile::ReadOnly) &&
+          fileOut.open(QFile::WriteOnly))
+      {
+         QTextStream streamOut(&fileOut);
+
+         while (! fileIn.atEnd())
+            streamOut << fileIn.readLine() << "\r\n";
+      }
+
+      fileIn.close();
+      fileOut.close();
+
+      QProcess::startDetached("notepad.exe "
+                              + fileOut.fileName());
+   }
+   else
+   {
+      QMessageBox::information(this,
+                               "log not found",
+                               "It looks like there is no log.",
+                               QMessageBox::Ok);
+   }
 }

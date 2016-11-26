@@ -17,7 +17,8 @@ SOURCES += plugin.cpp \
     IniFile.cpp \
     Player.cpp \
     GraphicsScene.cpp \
-    DebugDialog.cpp
+    DebugDialog.cpp \
+    Log.cpp
 
 HEADERS += plugin.h\
     dayzsrvip_global.h \

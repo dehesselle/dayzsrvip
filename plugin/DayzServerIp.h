@@ -29,7 +29,7 @@ public:
                          const QString& configPath = "");
    ~DayzServerIp();
 
-   void updateRemoteInfo(QString info, bool saveHistory);
+   void updateRemoteInfo(QString info, bool saveInfo);
    void updateLocalInfo(QStringList info);
 
    enum class MessageType
@@ -85,12 +85,15 @@ private slots:
 
    void onFsWatcherFileChanged(const QString& path);
 
+   void on_pbOpenLog_clicked();
+
 public slots:
    void onTs3MessageReceived(const QString& message);
 
 private:
    void setupRemoteInfo();
    void sortRemoteInfo();
+   void saveRemoteInfo(const QString& text);
    void setStatusMessage(const QString& message);
    void requestSendTs3Message(const QString& message);
 

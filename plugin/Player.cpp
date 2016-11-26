@@ -15,6 +15,12 @@
 
 const IniFile::KeyValue Player::INI_DAYZ_PROFILE = { "Player/dayzProfile", "" };
 
+Player::Player() :
+   m_isChanged(false)
+{
+
+}
+
 bool Player::importFromFile(QString filename)
 {
    bool result = false;
@@ -42,9 +48,7 @@ bool Player::importFromFile(QString filename)
                 line.contains("lastMPServer"))
                profileData << line;
          }
-#ifndef DAYZSRVIP_LIBRARY
-         LOG(TRACE) << "profileData.count() = " << profileData.count();
-#endif
+
          if (profileData.count() == 3)
          {
             QRegExp regex("=|\"");
@@ -53,22 +57,32 @@ bool Player::importFromFile(QString filename)
             {
                QStringList parts = profileData.at(i).split(regex);
                if      (parts.at(0) == "playerName")
+               {
+                  logDebug("found: playerName");
                   m_name = parts.at(2);
+               }
                else if (parts.at(0) == "lastMPServer")
+               {
+                  logDebug("found: lastMPServer");
                   m_serverIp = parts.at(2);
+               }
                else if (parts.at(0) == "lastMPServerName")
+               {
+                  logDebug("found: lastMPServerName");
                   m_serverName = parts.at(2);
+               }
             }
 
             updateTimestamp();
+            updateChanged();
 
-#ifndef DAYZSRVIP_LIBRARY
-            LOG(TRACE) << "m_name(" << m_name << ")";
-            LOG(TRACE) << "m_serverIp(" << m_serverIp << ")";
-            LOG(TRACE) << "m_serverName(" << m_serverName << ")";
-            LOG(TRACE) << "m_timestamp(" << m_timestamp << ")";
-#endif
             result = true;
+         }
+         else
+         {
+            logError("profileData.count() == "
+                     + QString::number(profileData.count())
+                     + ", but must be 3");
          }
 
          dayzProfile.close();
@@ -76,6 +90,25 @@ bool Player::importFromFile(QString filename)
    }
 
    return result;
+}
+
+void Player::updateChanged()
+{
+   if (m_name == m_nameOld &&
+       m_serverName == m_serverNameOld &&
+       m_serverIp == m_serverIpOld)
+   {
+      m_isChanged = false;
+      logDebug("no relevant changes to profile");
+   }
+   else
+   {
+      m_isChanged = true;
+      m_nameOld = m_name;
+      m_serverNameOld = m_serverName;
+      m_serverIpOld = m_serverIp;
+      logDebug("relevant changes to profile detected");
+   }
 }
 
 QString Player::toMessage()

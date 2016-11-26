@@ -370,15 +370,7 @@ void DayzServerIp::onTs3MessageReceived(const QString &message)
          setStatusMessage("Teammate changed name.");
          break;
       case MessageType::REQUEST_SITREP:
-         if (ui->rbOn->isChecked())
-         {
-            setStatusMessage("Responding to request for sitrep.");
-            emit sendTs3Message(m_player.toMessage());
-         }
-         else
-         {
-            setStatusMessage("Ignoring request for sitrep (we're still OFF).");
-         }
+         requestSendTs3Message(m_player.toMessage());
          break;
       case MessageType::INVALID:
          break;
@@ -395,7 +387,7 @@ void DayzServerIp::requestSendTs3Message(const QString &message)
    if (ui->rbOn->isChecked())
       emit sendTs3Message(message);
    else
-      setStatusMessage("Not transmitting - still 'off'.");
+      setStatusMessage("Not responding - still 'off'.");
 }
 
 void DayzServerIp::sortRemoteInfo()

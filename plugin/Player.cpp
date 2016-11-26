@@ -27,10 +27,6 @@ bool Player::importFromFile(QString filename)
 
    m_filename = filename;
 
-#ifndef DAYZSRVIP_LIBRARY
-   LOG(TRACE) << "filename: " << m_filename;
-#endif
-
    if (QFile::exists(m_filename))
    {
       QFile dayzProfile(m_filename);
@@ -58,18 +54,18 @@ bool Player::importFromFile(QString filename)
                QStringList parts = profileData.at(i).split(regex);
                if      (parts.at(0) == "playerName")
                {
-                  logDebug("found: playerName");
                   m_name = parts.at(2);
+                  logDebug("found playerName=" + m_name);
                }
                else if (parts.at(0) == "lastMPServer")
                {
-                  logDebug("found: lastMPServer");
                   m_serverIp = parts.at(2);
+                  logDebug("found lastMPServer=" + m_serverIp);
                }
                else if (parts.at(0) == "lastMPServerName")
                {
-                  logDebug("found: lastMPServerName");
                   m_serverName = parts.at(2);
+                  logDebug("found lastMPServerName=" + m_serverName);
                }
             }
 
@@ -139,5 +135,5 @@ QStringList Player::toLocalInfo()
 
 void Player::updateTimestamp()
 {
-   m_timestamp = QDateTime::currentDateTime().toString("yy.MM.dd hh:mm:ss");
+   m_timestamp = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
 }

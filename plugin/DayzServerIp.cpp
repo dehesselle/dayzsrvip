@@ -58,6 +58,8 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->pbOpenLog->setToolTip("open TeamSpeak log");
 
       ui->gvLogo->setToolTip("DayZ is the game!");
+
+      setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
    }
 
    logDebug("m_settings.openFile()");
@@ -67,7 +69,6 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
    connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
 
-   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
 
    // show DayZ Logo
@@ -183,9 +184,6 @@ void DayzServerIp::on_pbOpenProfile_clicked()
 void DayzServerIp::updateRemoteInfo(QString info,
                                     bool saveInfo)
 {
-#ifndef DAYZSRVIP_LIBRARY
-   LOG(TRACE) << "info(" << info.length() << "): " << info;
-#endif
    QRegExp regex(MSG_STR_SEPARATOR);
    QStringList infoFields = info.split(regex);
 
@@ -201,9 +199,8 @@ void DayzServerIp::updateRemoteInfo(QString info,
          {
             case 0:   // insert new item
             {
-#ifndef DAYZSRVIP_LIBRARY
-               LOG(TRACE) << "inserting item";
-#endif
+               logDebug("updateRemoteInfo: new");
+
                int row = m_remoteInfo.rowCount();
 
                for (int i = 0; i < infoFields.count(); i++)
@@ -215,9 +212,8 @@ void DayzServerIp::updateRemoteInfo(QString info,
             }
             case 1:   // update existing item
             {
-#ifndef DAYZSRVIP_LIBRARY
-               LOG(TRACE) << "updating item";
-#endif
+               logDebug("updateRemoteInfo: update");
+
                QStandardItem* firstItem = itemList.at(USMF_INGAME_NAME);
                int row = firstItem->row();
 
@@ -302,10 +298,6 @@ void DayzServerIp::updateLocalInfo(QStringList info)
 
 void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 {
-#ifndef DAYZSRVIP_LIBRARY
-   LOG(TRACE) << "file: " << path;
-#endif
-
    int count = 0;
 
    while (count < 6)

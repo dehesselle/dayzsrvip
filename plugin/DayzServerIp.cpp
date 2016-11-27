@@ -277,9 +277,6 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 //      logDebug("import count = " + QString::number(count));
    }
 
-   if (! m_fsWatcher->files().count())
-      m_fsWatcher->addPath(path);
-
    if (m_player.m_isChanged)
    {
       updateLocalInfo(m_player.toLocalInfo());
@@ -290,6 +287,9 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
          setStatusMessage("Sent update to teammates.");
       }
    }
+
+   if (! m_fsWatcher->files().count())
+      m_fsWatcher->addPath(path);
 }
 
 void DayzServerIp::on_rbOn_clicked()

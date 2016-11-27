@@ -29,9 +29,6 @@ public:
                          const QString& configPath = "");
    ~DayzServerIp();
 
-   void updateRemoteInfo(QString info, bool saveInfo);
-   void updateLocalInfo(QStringList info);
-
    enum class MessageType
    {
       INVALID = 0,
@@ -74,6 +71,8 @@ public:
 
    static const IniFile::KeyValue INI_VERSION_NO;
 
+   friend class DebugDialog;
+
 signals:
    void sendTs3Message(QString text);
 
@@ -95,9 +94,15 @@ private:
    void setupRemoteInfo();
    void sortRemoteInfo();
    void saveRemoteInfo(const QString& text);
+
    void setStatusMessage(const QString& message);
    void requestSendTs3Message(const QString& message);
    void checkVersionNo();
+   void updateRemoteInfo(QString info, bool saveInfo);
+   void updateLocalInfo(QStringList info);
+
+   void processProfile(const QString& filename,
+                       bool forceUpdate = false);
 
    Ui::DayzServerIp *ui;
 
@@ -112,7 +117,7 @@ private:
 
    Player m_player;
 
-   QString m_path;
+   QString m_configPath;
 };
 
 #endif // DAYZSERVERIP_H

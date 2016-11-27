@@ -39,7 +39,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
    ui(new Ui::DayzServerIp),
    m_scene(0),
    m_fsWatcher(new QFileSystemWatcher(this)),
-   m_path(configPath.left(configPath.length() - 1))
+   m_configPath(configPath.left(configPath.length() - 1))
 {
    Q_INIT_RESOURCE(dayzsrvip);
 
@@ -71,8 +71,8 @@ DayzServerIp::DayzServerIp(QWidget *parent,
    }
 
    logDebug("m_settings.openFile()");
-   m_settings.openFile(m_path + "/dayzsrvip.ini");
-   m_remoteInfoFile = m_path + "/dayzsrvip.hst";
+   m_settings.openFile(m_configPath + "/dayzsrvip.ini");
+   m_remoteInfoFile = m_configPath + "/dayzsrvip.hst";
    checkVersionNo();   // this has to called ASAP to handle version changes
 
    connect(m_fsWatcher, &QFileSystemWatcher::fileChanged, this, &DayzServerIp::onFsWatcherFileChanged);
@@ -256,37 +256,7 @@ void DayzServerIp::updateLocalInfo(QStringList info)
 
 void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 {
-   int count = 0;
-
-   while (count < 6)
-   {
-      QThread::sleep(1);
-
-      if (m_player.importFromFile(path))
-         break;
-
-      count++;
-   }
-
-   if (count > 5)
-   {
-      logError("unable to import DayZProfile after 5 attempts");
-   }
-   else
-   {
-//      logDebug("import count = " + QString::number(count));
-   }
-
-   if (m_player.m_isChanged)
-   {
-      updateLocalInfo(m_player.toLocalInfo());
-
-      if (ui->rbOn->isChecked())
-      {
-         requestSendTs3Message(m_player.toMessage());
-         setStatusMessage("Sent update to teammates.");
-      }
-   }
+   processProfile(path);
 
    if (! m_fsWatcher->files().count())
       m_fsWatcher->addPath(path);
@@ -436,7 +406,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
 
 void DayzServerIp::on_pbLogOpen_clicked()
 {
-   QDir logDir(m_path + "/logs");
+   QDir logDir(m_configPath + "/logs");
    QString currentLog = logDir.entryList(QStringList() << "*.log",
                                          QDir::Files,
                                          QDir::Time).at(0);
@@ -518,6 +488,9 @@ void DayzServerIp::on_pbProfileOpen_clicked()
 
 void DayzServerIp::on_pbSitrepRequest_clicked()
 {
+   QString dayzProfile(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
+   processProfile(dayzProfile, true);
+
    setStatusMessage("Requesting sitrep from teammates.");
    requestSendTs3Message(MSG_STR_REQUEST_SITREP);
 }
@@ -526,4 +499,33 @@ void DayzServerIp::on_pbDebugOpen_clicked()
 {
    DebugDialog* debugDialog = new DebugDialog(this);
    debugDialog->show();
+}
+
+void DayzServerIp::processProfile(const QString &filename,
+                                  bool forceUpdate)
+{
+   int count = 0;
+
+   while (count < 6)
+   {
+      count++;
+      QThread::sleep(1);
+
+      if (m_player.importFromFile(filename))
+         break;
+   }
+
+   if (count > 5)
+      logError("unable to import DayZProfile after 5 attempts");
+
+   if (m_player.m_isChanged || forceUpdate)
+   {
+      updateLocalInfo(m_player.toLocalInfo());
+
+      if (ui->rbOn->isChecked())
+      {
+         requestSendTs3Message(m_player.toMessage());
+         setStatusMessage("Sent update to teammates.");
+      }
+   }
 }

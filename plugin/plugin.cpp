@@ -1,7 +1,7 @@
 /*
- * TeamSpeak 3 demo plugin
+ * DayZ Server IP - TeamSpeak 3 plugin
  *
- * Copyright (c) 2008-2016 TeamSpeak Systems GmbH
+ * https://github.com/dehesselle/dayzsrvip
  */
 
 #ifdef _WIN32
@@ -103,7 +103,10 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
    if (rc == ERROR_ok)
    {
       char* name = 0;
-      rc = ts3Functions.getClientVariableAsString(srvConHdlId, clientId, CLIENT_NICKNAME, &name);
+      rc = ts3Functions.getClientVariableAsString(srvConHdlId,
+                                                  clientId,
+                                                  CLIENT_NICKNAME,
+                                                  &name);
 
       if (rc == ERROR_ok)
       {
@@ -114,15 +117,12 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
 
    if (rc == ERROR_ok)
    {
+      // FIXME "a little hackish": insert TS3 nickname here
       message.replace("TS3NAME_PLACEHOLDER", clientName);
       rc = ts3Functions.requestSendChannelTextMsg(srvConHdlId,
                                                   message.toStdString().c_str(),
                                                   channelId,
                                                   NULL);
-   }
-
-   if (rc == ERROR_ok)
-   {
    }
 }
 //------------------------------------------------------------------------------
@@ -257,7 +257,6 @@ void ts3plugin_registerPluginID(const char* id) {
    const size_t sz = strlen(id) + 1;
    pluginID = (char*)malloc(sz * sizeof(char));
    _strcpy(pluginID, sz, id);  /* The id buffer will invalidate after exiting this function */
-   printf("PLUGIN: registerPluginID: %s\n", pluginID);
 }
 
 /* Required to release the memory for parameter "data" allocated in ts3plugin_infoData and ts3plugin_initMenus */
@@ -355,8 +354,6 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 /* Clientlib */
 
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored) {
-    printf("PLUGIN: onTextMessageEvent %llu %d %d %s %s %d\n", (long long unsigned int)serverConnectionHandlerID, targetMode, fromID, fromName, message, ffIgnored);
-
    /* Friend/Foe manager has ignored the message, so ignore here as well. */
    if(ffIgnored) {
       return 0; /* Client will ignore the message anyways, so return value here doesn't matter */

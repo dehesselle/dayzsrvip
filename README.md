@@ -12,7 +12,7 @@ There is a [manual](doc/MANUAL.md) that'll get you up and running in a minute!
 ## Download
 
 The plugin itself is just one file named `dayzsrvip.dll`, packaged as `.ts3_plugin` and available on the [releases](https://github.com/dehesselle/dayzsrvip/releases) page. If you prefer the plain DLL, rename the `.ts3_plugin` to `.zip` and get it from there.
-##### Requirements
+#### Requirements
 You need a recent 64bit version of [TeamSpeak](http://www.teamspeak.com) that provides plugin API v20. Just update to the latest version if you're not there already (at the time of writing: 3.0.19.4) and you're good to go.
 
 ## Build
@@ -20,8 +20,7 @@ Building this yourself is pretty straight forward. Download and install Visual S
 
 ## Known Issues
 This project is still under heavy development and needs testing - there will be bugs!
-- players with the same in-game name will mess things up
-- documentation is not up to par with current release (sorry - things are happening really fast now and fixing bugs for the people who take the time to test this is way more important)
+- documentation is not up to par with current release (sorry - things are happening fast now and fixing bugs for the people who take the time to test is way more important)
 
 ## TODOs
 - documentation

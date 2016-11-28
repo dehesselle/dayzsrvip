@@ -63,23 +63,62 @@ static int wcharToUtf8(const wchar_t* str, char** result) {
 //--- additional stuff required by dayzsrvip -----------------------------------
 DayzServerIp* dayzServerIp = 0;   // main class of this plugin
 
-void sendMessageToChannel(QString message)   // Wrapper to simplify sending
-                                             // a message to current channel.
-                                             // If any kind of error occurs,
-                                             // the function aborts silently.
+enum Ts3IdProgress
 {
+   TIP_SERVER_CONNECTION_HANDLE = 0,
+   TIP_CONNECTON_STATUS,
+   TIP_CLIENT_ID,
+   TIP_CHANNEL_ID,
+   TIP_CLIENT_NAME
+};
+
+const char* progressToStr(Ts3IdProgress progress)
+{
+   switch (progress)
+   {
+      case TIP_SERVER_CONNECTION_HANDLE:
+         return "SMP_SERVER_CONNECTION_HANDLE";
+         break;
+      case TIP_CONNECTON_STATUS:
+         return "SMP_CONNECTON_STATUS";
+         break;
+      case TIP_CLIENT_ID:
+         return "SMP_CLIENT_ID";
+         break;
+      case TIP_CHANNEL_ID:
+         return "SMP_CHANNEL_ID";
+         break;
+      case TIP_CLIENT_NAME:
+         return "SMP_CLIENT_NAME";
+         break;
+   }
+
+   return "INVALID";   // just to avoid compiler warning
+}
+
+bool getTs3Ids(uint64& srvConHdlId,
+               int& conStatus,
+               anyID& clientId,
+               uint64& channelId,
+               QString& clientName,
+               Ts3IdProgress& progress)
+{
+   bool result = false;
+
+   progress = TIP_SERVER_CONNECTION_HANDLE;
+
    static const unsigned int ERROR_dummy = 999999;
    unsigned int rc = ERROR_dummy;
 
-   uint64 srvConHdlId = ts3Functions.getCurrentServerConnectionHandlerID();
+   srvConHdlId = ts3Functions.getCurrentServerConnectionHandlerID();
    if (srvConHdlId)   // check if connected to server
       rc = ERROR_ok;
    else
       rc = ERROR_dummy;
 
-   int conStatus;
    if (rc == ERROR_ok)
    {
+      progress = TIP_CONNECTON_STATUS;
       rc = ts3Functions.getConnectionStatus(srvConHdlId, &conStatus);
 
       if (rc == ERROR_ok)
@@ -87,21 +126,21 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
             rc = ERROR_dummy;
    }
 
-   anyID clientId;
    if (rc == ERROR_ok)
    {
+      progress = TIP_CLIENT_ID;
       rc = ts3Functions.getClientID(srvConHdlId, &clientId);
    }
 
-   uint64 channelId;
    if (rc == ERROR_ok)
    {
+      progress = TIP_CHANNEL_ID;
       rc = ts3Functions.getChannelOfClient(srvConHdlId, clientId, &channelId);
    }
 
-   QString clientName;
    if (rc == ERROR_ok)
    {
+      progress = TIP_CLIENT_NAME;
       char* name = 0;
       rc = ts3Functions.getClientVariableAsString(srvConHdlId,
                                                   clientId,
@@ -116,13 +155,40 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
    }
 
    if (rc == ERROR_ok)
+      result = true;
+
+   return result;
+}
+
+void sendMessageToChannel(QString message)   // Wrapper to simplify sending
+                                             // a message to current channel.
+                                             // If any kind of error occurs,
+                                             // the function aborts silently.
+{
+   uint64 srvConHdlId;
+   int conStatus;
+   anyID clientId;
+   uint64 channelId;
+   QString clientName;
+   Ts3IdProgress progress;
+
+   if (getTs3Ids(srvConHdlId, conStatus, clientId, channelId,
+                 clientName, progress))
    {
       // FIXME "a little hackish": insert TS3 nickname here
       message.replace("TS3NAME_PLACEHOLDER", clientName);
-      rc = ts3Functions.requestSendChannelTextMsg(srvConHdlId,
-                                                  message.toStdString().c_str(),
-                                                  channelId,
-                                                  NULL);
+      unsigned int rc = ts3Functions.requestSendChannelTextMsg(
+               srvConHdlId,
+               message.toStdString().c_str(),
+               channelId,
+               NULL);
+
+      if (rc != ERROR_ok)
+         logError("failed to send message");
+   }
+   else
+   {
+      logError(QString("failed to get ID") + progressToStr(progress));
    }
 }
 //------------------------------------------------------------------------------
@@ -358,6 +424,21 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
    if(ffIgnored) {
       return 0; /* Client will ignore the message anyways, so return value here doesn't matter */
    }
+
+   // TODO: only use messages from channel
+
+//   uint64 srvConHdlId;
+//   int conStatus;
+//   anyID& clientId;
+//   uint64 channelId;
+//   QString clientName;
+//   Ts3IdProgress progress;
+
+//   if (getTs3Ids(srvConHdlId, conStatus, clientId, channelId,
+//                 clientName, progress))
+//   {
+
+//   }
 
    ::dayzServerIp->onTs3MessageReceived(message);
 

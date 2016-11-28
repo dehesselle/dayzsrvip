@@ -340,7 +340,14 @@ void DayzServerIp::onTs3MessageReceived(const QString &message)
          setStatusMessage("Teammate changed name.");
          break;
       case MessageType::REQUEST_SITREP:
-         requestSendTs3Message(m_player.toMessage());
+         // There are two ways to handle a REQUEST_SITREP:
+         // - just send the current data with
+         //   requestSendTs3Message(m_player.toMessage())     or
+         // - processProfile(...)
+         // Since we're still hunting bugs, the later approach is used here
+         // to make sure we don't have stale data.
+         processProfile(m_settings.value(Player::INI_DAYZ_PROFILE).toString(),
+                        true);
          break;
       case MessageType::INVALID:
          break;
@@ -446,12 +453,13 @@ void DayzServerIp::on_pbLogOpen_clicked()
 void DayzServerIp::on_pbProfileOpen_clicked()
 {
    QString dayzProfile =
-         QFileDialog::getOpenFileName(this,
-                                      "Open DayZ Profile",
-                                      QStandardPaths::locate(QStandardPaths::DocumentsLocation,
-                                                             QString(),
-                                                             QStandardPaths::LocateDirectory) + "/DayZ",
-                                      "DayZ Profile (*.DayZProfile)");
+         QFileDialog::getOpenFileName(
+            this,
+            "Open DayZ Profile",
+            QStandardPaths::locate(QStandardPaths::DocumentsLocation,
+                                   QString(),
+                                   QStandardPaths::LocateDirectory) + "/DayZ",
+            "DayZ Profile (*.DayZProfile)");
 
    if (QFile::exists(dayzProfile))
    {
@@ -488,9 +496,6 @@ void DayzServerIp::on_pbProfileOpen_clicked()
 
 void DayzServerIp::on_pbSitrepRequest_clicked()
 {
-   QString dayzProfile(m_settings.value(Player::INI_DAYZ_PROFILE).toString());
-   processProfile(dayzProfile, true);
-
    setStatusMessage("Requesting sitrep from teammates.");
    requestSendTs3Message(MSG_STR_REQUEST_SITREP);
 }
@@ -506,20 +511,29 @@ void DayzServerIp::processProfile(const QString &filename,
 {
    int count = 0;
 
-   while (count < 6)
+   while (count < 4)
    {
+      // I can't remember why I'm looping over this. Since I initially
+      // won't have done this without reason (this part of the source
+      // is >1 year old), I'm guessing I've run into
+      // contention problems. Leaving it as it is for now.
+
       count++;
-      QThread::sleep(1);
 
       if (m_player.importFromFile(filename))
          break;
+
+      QThread::sleep(1);
    }
 
-   if (count > 5)
-      logError("unable to import DayZProfile after 5 attempts");
+   if (count > 3)
+      logError("unable to import DayZProfile after 3 attempts");
 
    if (m_player.m_isChanged || forceUpdate)
    {
+      if (forceUpdate)
+         logDebug("forcing update");
+
       updateLocalInfo(m_player.toLocalInfo());
 
       if (ui->rbOn->isChecked())

@@ -419,6 +419,39 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 
 /* Clientlib */
 
+void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID,
+                                          int newStatus,
+                                          unsigned int errorNumber)
+{
+   if (newStatus == STATUS_CONNECTION_ESTABLISHED)   // client & channels
+                                                     // available
+   {
+      anyID clientId;
+
+      if (ts3Functions.getClientID(
+             serverConnectionHandlerID, &clientId) == ERROR_ok)
+      {
+         char* name;
+         if (ts3Functions.getClientSelfVariableAsString(
+                serverConnectionHandlerID, CLIENT_NICKNAME, &name) == ERROR_ok)
+         {
+            ::dayzServerIp->setTs3Name(name);
+            ts3Functions.freeMemory(name);
+         }
+         else
+         {
+            ::dayzServerIp->setTs3Name("Unknown"
+                                       + QString::number(qrand() % 10000));
+         }
+      }
+      else
+      {
+         ::dayzServerIp->setTs3Name("Unknown"
+                                    + QString::number(qrand() % 10000));
+      }
+   }
+}
+
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored) {
    /* Friend/Foe manager has ignored the message, so ignore here as well. */
    if(ffIgnored) {

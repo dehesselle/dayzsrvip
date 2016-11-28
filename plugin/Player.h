@@ -22,7 +22,8 @@ public:
    QString toMessage();
    QStringList toLocalInfo();
 
-   QString m_name;
+   QString m_nameDayz;
+   QString m_nameTs3;
    QString m_serverName;
    QString m_serverIp;
    QString m_timestamp;

@@ -29,11 +29,13 @@ public:
                          const QString& configPath = "");
    ~DayzServerIp();
 
+   void setTs3Name(const QString& name);
+
    enum class MessageType
    {
       INVALID = 0,
       UPDATE_SERVER,
-      RENAME_CHAR,
+//      RENAME_CHAR,
       REQUEST_SITREP
    };
 
@@ -41,8 +43,8 @@ public:
 
    enum USMF   // Update Server Message Fields
    {
-      USMF_INGAME_NAME = 0,
-      USMF_TS3_NAME,
+      USMF_TS3_NAME = 0,
+      USMF_INGAME_NAME,
       USMF_SERVER_NAME,
       USMF_SERVER_IP,
       USMF_TIMESTAMP,
@@ -58,7 +60,8 @@ public:
 
    enum LIF   // Local Info Fields
    {
-      LIF_INGAME_NAME = 0,
+      LIF_TS3_NAME = 0,
+      LIF_INGAME_NAME,
       LIF_SERVER_NAME,
       LIF_SERVER_IP,
       LIF_COUNT
@@ -68,6 +71,11 @@ public:
    static const char* MSG_STR_RENAME_CHAR;
    static const char* MSG_STR_REQUEST_SITREP;
    static const char* MSG_STR_SEPARATOR;
+
+   static const char* LOCALINFO_SERVER_INIT;
+   static const char* LOCALINFO_SERVER_IP_INIT;
+   static const char* LOCALINFO_CHAR_NAME_INIT;
+   static const char* LOCALINFO_TS3_NAME_INIT;
 
    static const IniFile::KeyValue INI_VERSION_NO;
 

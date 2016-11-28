@@ -54,8 +54,8 @@ bool Player::importFromFile(QString filename)
                QStringList parts = profileData.at(i).split(regex);
                if      (parts.at(0) == "playerName")
                {
-                  m_name = parts.at(2);
-                  logDebug("found playerName=" + m_name);
+                  m_nameDayz = parts.at(2);
+                  logDebug("found playerName=" + m_nameDayz);
                }
                else if (parts.at(0) == "lastMPServer")
                {
@@ -90,7 +90,7 @@ bool Player::importFromFile(QString filename)
 
 void Player::updateChanged()
 {
-   if (m_name == m_nameOld &&
+   if (m_nameDayz == m_nameOld &&
        m_serverName == m_serverNameOld &&
        m_serverIp == m_serverIpOld)
    {
@@ -100,7 +100,7 @@ void Player::updateChanged()
    else
    {
       m_isChanged = true;
-      m_nameOld = m_name;
+      m_nameOld = m_nameDayz;
       m_serverNameOld = m_serverName;
       m_serverIpOld = m_serverIp;
       logDebug("relevant changes to profile detected");
@@ -113,8 +113,8 @@ QString Player::toMessage()
    updateTimestamp();
 
    result = QString(DayzServerIp::MSG_STR_UPDATE_SERVER) + "###"
-         + m_name + "###"
-         + "TS3NAME_PLACEHOLDER###"
+         + m_nameTs3 + "###"
+         + m_nameDayz + "###"
          + m_serverName + "###"
          + m_serverIp + "###"
          + m_timestamp;
@@ -126,7 +126,8 @@ QStringList Player::toLocalInfo()
 {
    QStringList result;
 
-   result << m_name
+   result << m_nameTs3
+          << m_nameDayz
           << m_serverName
           << m_serverIp;
 

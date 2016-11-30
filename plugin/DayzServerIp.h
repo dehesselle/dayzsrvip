@@ -35,7 +35,6 @@ public:
    {
       INVALID = 0,
       UPDATE_SERVER,
-//      RENAME_CHAR,
       REQUEST_SITREP
    };
 
@@ -49,13 +48,6 @@ public:
       USMF_SERVER_IP,
       USMF_TIMESTAMP,
       USMF_COUNT
-   };
-
-   enum RCMF   // Rename Char Message Fields
-   {
-      RCMF_NAME_OLD = 0,
-      RCMF_NAME_NEW,
-      RCMF_COUNT
    };
 
    enum LIF   // Local Info Fields

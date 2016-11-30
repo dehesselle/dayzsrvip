@@ -28,7 +28,6 @@ const char* DayzServerIp::LOCALINFO_CHAR_NAME_INIT = "___CHAR_NAME___";
 const char* DayzServerIp::LOCALINFO_TS3_NAME_INIT = "___TS3_NAME___";
 
 const char* DayzServerIp::MSG_STR_UPDATE_SERVER = "[dayzsrvip|2|server]";
-const char* DayzServerIp::MSG_STR_RENAME_CHAR = "[dayzsrvip|2|char]";
 const char* DayzServerIp::MSG_STR_REQUEST_SITREP = "[dayzsrvip|2|sitrep]";
 const char* DayzServerIp::MSG_STR_SEPARATOR = "###";
 
@@ -207,25 +206,6 @@ void DayzServerIp::updateRemoteInfo(QString info,
             saveRemoteInfo(info);
          break;
       }
-//      case MessageType::RENAME_CHAR:
-//      {
-//         infoFields.pop_front();   // lose the message ID
-
-//         QString nameOld = infoFields.at(RCMF_NAME_OLD);
-//         QString nameNew = infoFields.at(RCMF_NAME_NEW);
-
-//         QList<QStandardItem*> itemList = m_remoteInfo.findItems(nameOld);
-
-//         for (QList<QStandardItem*>::Iterator it = itemList.begin();
-//              it != itemList.end();
-//              it++)
-//         {
-//            (*it)->setText(nameNew);
-//         }
-
-//         //sortRemoteInfo();
-//         break;
-//      }
       case MessageType::REQUEST_SITREP:
       case MessageType::INVALID:
       {
@@ -252,14 +232,6 @@ void DayzServerIp::updateLocalInfo(QStringList info)
    html.replace(oldServerName, serverName);
    html.replace(oldServerIp, serverIp);
    ui->tbLocalInfo->setHtml(html);
-
-//   if ((oldCharName != charName) &&
-//      (oldCharName != LOCALINFO_CHAR_NAME_INIT))
-//   {
-//      requestSendTs3Message(QString(MSG_STR_RENAME_CHAR)
-//                            + MSG_STR_SEPARATOR + oldCharName
-//                            + MSG_STR_SEPARATOR + charName);
-//   }
 
    oldCharName = charName;
    oldServerName = serverName;
@@ -308,11 +280,6 @@ DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& message
       if (count == USMF_COUNT)
          result = MessageType::UPDATE_SERVER;
    }
-//   else if (message.at(0) == MSG_STR_RENAME_CHAR)
-//   {
-//      if (count == RCMF_COUNT)
-//         result = MessageType::RENAME_CHAR;
-//   }
    else if (message.at(0) == MSG_STR_REQUEST_SITREP)
    {
       result = MessageType::REQUEST_SITREP;
@@ -347,10 +314,6 @@ void DayzServerIp::onTs3MessageReceived(const QString &message)
          updateRemoteInfo(message, true);
          setStatusMessage("Update from teammate received.");
          break;
-//      case MessageType::RENAME_CHAR:
-//         updateRemoteInfo(message, false);
-//         setStatusMessage("Teammate changed name.");
-//         break;
       case MessageType::REQUEST_SITREP:
          // There are two ways to handle a REQUEST_SITREP:
          // - just send the current data with
@@ -416,7 +379,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
          logError("version change: failed to remove history file "
                   + m_remoteInfoFile);
       }
-      updateRunCount(1);
+      updateRunCount(1);   // reset counter
    }
    else
    {

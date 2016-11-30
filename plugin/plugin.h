@@ -1,7 +1,11 @@
+/*
+ * DayZ Server IP - TeamSpeak 3 plugin
+ *
+ * https://github.com/dehesselle/dayzsrvip
+ */
+
 #ifndef PLUGIN_H
 #define PLUGIN_H
-
-//#include "dayzsrvip_global.h"
 
 #ifdef WIN32
 #define PLUGINS_EXPORTDLL __declspec(dllexport)

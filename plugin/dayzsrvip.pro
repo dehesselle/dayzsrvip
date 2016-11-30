@@ -19,7 +19,6 @@ SOURCES += plugin.cpp \
     Log.cpp
 
 HEADERS += plugin.h\
-    dayzsrvip_global.h \
     DayzServerIp.h \
     IniFile.h \
     Log.h \

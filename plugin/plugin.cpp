@@ -63,7 +63,8 @@ static int wcharToUtf8(const wchar_t* str, char** result) {
 //--- additional stuff required by dayzsrvip -----------------------------------
 DayzServerIp* dayzServerIp = 0;   // main class of this plugin
 
-enum Ts3IdProgress
+enum Ts3IdProgress   // all the various calls to TS3-functions that
+                     // are made in getTs3Ids()
 {
    TIP_SERVER_CONNECTION_HANDLE = 0,
    TIP_CONNECTON_STATUS,
@@ -77,19 +78,19 @@ const char* progressToStr(Ts3IdProgress progress)
    switch (progress)
    {
       case TIP_SERVER_CONNECTION_HANDLE:
-         return "SMP_SERVER_CONNECTION_HANDLE";
+         return "TIP_SERVER_CONNECTION_HANDLE";
          break;
       case TIP_CONNECTON_STATUS:
-         return "SMP_CONNECTON_STATUS";
+         return "TIP_CONNECTON_STATUS";
          break;
       case TIP_CLIENT_ID:
-         return "SMP_CLIENT_ID";
+         return "TIP_CLIENT_ID";
          break;
       case TIP_CHANNEL_ID:
-         return "SMP_CHANNEL_ID";
+         return "TIP_CHANNEL_ID";
          break;
       case TIP_CLIENT_NAME:
-         return "SMP_CLIENT_NAME";
+         return "TIP_CLIENT_NAME";
          break;
    }
 
@@ -175,8 +176,6 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
    if (getTs3Ids(srvConHdlId, conStatus, clientId, channelId,
                  clientName, progress))
    {
-      // FIXME "a little hackish": insert TS3 nickname here
-      message.replace("TS3NAME_PLACEHOLDER", clientName);
       unsigned int rc = ts3Functions.requestSendChannelTextMsg(
                srvConHdlId,
                message.toStdString().c_str(),

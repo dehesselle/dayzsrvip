@@ -33,6 +33,7 @@ const char* DayzServerIp::MSG_STR_REQUEST_SITREP = "[dayzsrvip|2|sitrep]";
 const char* DayzServerIp::MSG_STR_SEPARATOR = "###";
 
 const IniFile::KeyValue DayzServerIp::INI_VERSION_NO = { "DayzServerIp/version", "" };
+const IniFile::KeyValue DayzServerIp::INI_RUN_COUNT = { "DayzServerIp/runCount", "0" };
 
 DayzServerIp::DayzServerIp(QWidget *parent,
                            const QString& configPath) :
@@ -111,7 +112,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       }
    }
 
-   m_player.m_nameTs3 = LOCALINFO_TS3_NAME_INIT;
+   m_player.m_ts3Name = LOCALINFO_TS3_NAME_INIT;
 
    {
       QString dayzProfile = m_settings.value(Player::INI_DAYZ_PROFILE).toString();
@@ -143,7 +144,7 @@ DayzServerIp::~DayzServerIp()
 
 void DayzServerIp::setTs3Name(const QString& name)
 {
-   m_player.m_nameTs3 = name;
+   m_player.m_ts3Name = name;
    updateLocalInfo(m_player.toLocalInfo());
 }
 
@@ -407,7 +408,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
    {
       if (QFile::remove(m_remoteInfoFile))
       {
-         logInfo("version change: deleted history due to version change");
+         logInfo("version change: deleted history");
          m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
       }
       else
@@ -415,10 +416,12 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
          logError("version change: failed to remove history file "
                   + m_remoteInfoFile);
       }
+      updateRunCount(1);
    }
    else
    {
       logDebug("version ok");
+      updateRunCount();
    }
 }
 
@@ -553,4 +556,13 @@ void DayzServerIp::processProfile(const QString &filename,
          setStatusMessage("Sent update to teammates.");
       }
    }
+}
+
+void DayzServerIp::updateRunCount(int count)
+{
+   if (count)
+      m_settings.setValue(INI_RUN_COUNT, count);
+   else
+      m_settings.setValue(INI_RUN_COUNT,
+                          m_settings.value(INI_RUN_COUNT).toInt() + 1);
 }

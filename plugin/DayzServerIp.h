@@ -78,6 +78,7 @@ public:
    static const char* LOCALINFO_TS3_NAME_INIT;
 
    static const IniFile::KeyValue INI_VERSION_NO;
+   static const IniFile::KeyValue INI_RUN_COUNT;
 
    friend class DebugDialog;
 
@@ -108,6 +109,8 @@ private:
    void checkVersionNo();
    void updateRemoteInfo(QString info, bool saveInfo);
    void updateLocalInfo(QStringList info);
+
+   void updateRunCount(int count = 0);
 
    void processProfile(const QString& filename,
                        bool forceUpdate = false);

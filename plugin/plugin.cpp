@@ -5,7 +5,7 @@
  */
 
 #ifdef _WIN32
-#pragma warning (disable : 4100)  /* Disable Unreferenced parameter warning */
+#pragma warning (disable : 4100)  // disable unreferenced parameter warning
 #include <Windows.h>
 #endif
 
@@ -102,7 +102,9 @@ bool getTs3Ids(uint64& srvConHdlId,
                anyID& clientId,
                uint64& channelId,
                QString& clientName,
-               Ts3IdProgress& progress)
+               Ts3IdProgress& progress)   // Get all the IDs - the "usual
+                                          // suspects" - we need to interact
+                                          // with TS3 API functions.
 {
    bool result = false;
 
@@ -192,10 +194,7 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
 }
 //------------------------------------------------------------------------------
 
-/*********************************** Required functions ************************************/
-/*
- * If any of these required functions is not implemented, TS3 will refuse to load the plugin
- */
+//**************************** Required functions ******************************
 
 /* Unique name identifying this plugin */
 const char* ts3plugin_name() {
@@ -308,10 +307,7 @@ void ts3plugin_shutdown()
    }
 }
 
-/****************************** Optional functions ********************************/
-/*
- * Following functions are optional, if not needed you don't need to implement them.
- */
+//***************************** Optional functions *****************************
 
 /*
  * If the plugin wants to use error return codes, plugin commands, hotkeys or menu items, it needs to register a command ID. This function will be
@@ -327,15 +323,6 @@ void ts3plugin_registerPluginID(const char* id) {
 /* Required to release the memory for parameter "data" allocated in ts3plugin_infoData and ts3plugin_initMenus */
 void ts3plugin_freeMemory(void* data) {
    free(data);
-}
-
-/*
- * Plugin requests to be always automatically loaded by the TeamSpeak 3 client unless
- * the user manually disabled it in the plugin dialog.
- * This function is optional. If missing, no autoload is assumed.
- */
-int ts3plugin_requestAutoload() {
-   return 0;  /* 1 = request autoloaded, 0 = do not request autoload */
 }
 
 /* Helper function to create a menu item */
@@ -410,13 +397,13 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
    /* All memory allocated in this function will be automatically released by the TeamSpeak client later by calling ts3plugin_freeMemory */
 }
 
-/************************** TeamSpeak callbacks ***************************/
+//*************************** TeamSpeak callbacks ******************************
 /*
  * Following functions are optional, feel free to remove unused callbacks.
  * See the clientlib documentation for details on each function.
  */
 
-/* Clientlib */
+//--- Clientlib ----------------------------------------------------------------
 
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID,
                                           int newStatus,
@@ -451,33 +438,27 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID,
    }
 }
 
-int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored) {
-   /* Friend/Foe manager has ignored the message, so ignore here as well. */
-   if(ffIgnored) {
-      return 0; /* Client will ignore the message anyways, so return value here doesn't matter */
-   }
+int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID,
+                                 anyID targetMode,
+                                 anyID toID,
+                                 anyID fromID,
+                                 const char* fromName,
+                                 const char* fromUniqueIdentifier,
+                                 const char* message,
+                                 int ffIgnored)
+{
+   // Friend/Foe manager has ignored the message, so ignore here as well.
+   if (ffIgnored)
+      return 0; // Client will ignore the message anyways,
+                // so return value here doesn't matter */
 
-   // TODO: only use messages from channel
-
-//   uint64 srvConHdlId;
-//   int conStatus;
-//   anyID& clientId;
-//   uint64 channelId;
-//   QString clientName;
-//   Ts3IdProgress progress;
-
-//   if (getTs3Ids(srvConHdlId, conStatus, clientId, channelId,
-//                 clientName, progress))
-//   {
-
-//   }
-
-   ::dayzServerIp->onTs3MessageReceived(message);
+   if (targetMode == TextMessageTarget_CHANNEL)
+      ::dayzServerIp->onTs3MessageReceived(message);
 
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
-/* Client UI callbacks */
+//--- Client UI callbacks ------------------------------------------------------
 
 /*
  * Called when a plugin menu item (see ts3plugin_initMenus) is triggered. Optional function, when not using plugin menus, do not implement this.

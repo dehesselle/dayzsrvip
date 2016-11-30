@@ -26,7 +26,6 @@ PLUGINS_EXPORTDLL void ts3plugin_shutdown();
 /* Optional functions */
 PLUGINS_EXPORTDLL void ts3plugin_registerPluginID(const char* id);
 PLUGINS_EXPORTDLL void ts3plugin_freeMemory(void* data);
-PLUGINS_EXPORTDLL int ts3plugin_requestAutoload();
 PLUGINS_EXPORTDLL void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon);
 
 /* Clientlib */

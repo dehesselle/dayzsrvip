@@ -22,8 +22,8 @@ public:
    QString toMessage();
    QStringList toLocalInfo();
 
-   QString m_nameDayz;
-   QString m_nameTs3;
+   QString m_dayzName;
+   QString m_ts3Name;
    QString m_serverName;
    QString m_serverIp;
    QString m_timestamp;
@@ -34,7 +34,7 @@ private:
    void updateTimestamp();
    void updateChanged();
 
-   QString m_nameOld;
+   QString m_dayzNameOld;
    QString m_serverNameOld;
    QString m_serverIpOld;
 

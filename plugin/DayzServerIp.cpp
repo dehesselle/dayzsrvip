@@ -369,15 +369,22 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
 
    if (versionFromFile != DAYZSERVERIP_VERSION)
    {
-      if (QFile::remove(m_remoteInfoFile))
+      if (QFile::exists(m_remoteInfoFile))
       {
-         logInfo("version change: deleted history");
-         m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
+         if (QFile::remove(m_remoteInfoFile))
+         {
+            logInfo("version change: deleted history");
+            m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
+         }
+         else
+         {
+            logError("version change: failed to remove history file "
+                     + m_remoteInfoFile);
+         }
       }
       else
       {
-         logError("version change: failed to remove history file "
-                  + m_remoteInfoFile);
+         m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
       }
       updateRunCount(1);   // reset counter
    }
@@ -386,6 +393,8 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
       logDebug("version ok");
       updateRunCount();
    }
+
+   logInfo("runCount = " + m_settings.value(INI_RUN_COUNT).toString());
 }
 
 void DayzServerIp::on_pbLogOpen_clicked()

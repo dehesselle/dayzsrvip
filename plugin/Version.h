@@ -7,7 +7,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define DAYZSERVERIP_VERSION "0.4"
+#define DAYZSERVERIP_VERSION "0.5"
 
 #ifdef QT_DEBUG
 #define DEVELOPER_MODE

@@ -22,7 +22,6 @@
 #include "plugin.h"
 //--- additional stuff required by dayzsrvip -----------------------------------
 #include "DayzServerIp.h"
-#include "Version.h"
 #include <QString>
 #include "Log.h"
 //------------------------------------------------------------------------------
@@ -61,6 +60,10 @@ static int wcharToUtf8(const wchar_t* str, char** result) {
 #endif
 
 //--- additional stuff required by dayzsrvip -----------------------------------
+#ifdef QT_DEBUG
+#define DEVELOPER_MODE
+#endif
+
 DayzServerIp* dayzServerIp = 0;   // main class of this plugin
 
 enum Ts3IdProgress   // all the various calls to TS3-functions that

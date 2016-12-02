@@ -23,7 +23,6 @@ HEADERS += plugin.h\
     IniFile.h \
     Log.h \
     Player.h \
-    Version.h \
     DebugDialog.h
 
 INCLUDEPATH += $$PWD/../ts3psdk/include
@@ -39,3 +38,7 @@ FORMS += \
 
 RESOURCES += \
     dayzsrvip.qrc
+
+GIT_VERSION = $$system(C:/Portable/msys64/usr/bin/git --git-dir $$PWD/../.git --work-tree $$PWD describe --always --tags)
+
+DEFINES += DAYZSERVERIP_VERSION=\\\"$$GIT_VERSION\\\"

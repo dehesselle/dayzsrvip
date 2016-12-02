@@ -18,7 +18,6 @@
 #include <QProcess>
 #include <QDir>
 #include <QMessageBox>
-#include "Version.h"
 #include "Log.h"
 #include "DebugDialog.h"
 
@@ -69,9 +68,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->gvLogo->setToolTip("DayZ is the game!");
 
       setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-      setStatusMessage(QString("Welcome! This is version ")
-                       + DAYZSERVERIP_VERSION
-                       + QString("."));
+      setStatusMessage(QString("Welcome! ") + DAYZSERVERIP_VERSION);
    }
 
    logDebug("m_settings.openFile()");

@@ -19,7 +19,7 @@ The plugin itself is just one file named `dayzsrvip.dll`, packaged as `.ts3_plug
 Starting with v0.5, you need a 64bit version of TeamSpeak 3.1.x that provides plugin API v21. For [TeamSpeak](http://www.teamspeak.com) 3.0.x (API v20), use v0.4 instead.
 
 ## Build
-Building this yourself is pretty straight forward. Download and install Visual Studio 2015 and Qt 5.6.1. Open Qt Creator. Open the project `plugin/dayzsrvip.pro`. Start compiling.
+Building this yourself is pretty straight forward. Download and install [Visual Studio 2015](https://www.visualstudio.com/downloads/) and [Qt 5.6.1](https://www.qt.io/download-open-source/). Open Qt Creator. Open the project `plugin/dayzsrvip.pro`. Start compiling.
 
 ## Issues and Limitations
 This project is still in development and needs testing - there will be bugs!  

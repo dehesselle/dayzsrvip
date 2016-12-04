@@ -184,6 +184,8 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
       unsigned int rk = ts3Functions.getClientList(srvConHdlId, clientIDs);
       if (rk != ERROR_ok)
          logError("failed to get client list");
+         ts3Functions.freeMemory(clientIDs);
+         return;
       unsigned int rc = ts3Functions.sendPluginCommand(
                srvConHdlId,
                pluginID,
@@ -191,7 +193,7 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
                0,
                clientIDs,
                NULL);
-
+      ts3Functions.freeMemory(clientIDs);
       if (rc != ERROR_ok)
          logError("failed to send message");
    }

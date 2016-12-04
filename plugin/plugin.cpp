@@ -174,19 +174,22 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
    uint64 srvConHdlId;
    int conStatus;
    anyID clientId;
+   char[] clientIDs;
    uint64 channelId;
    QString clientName;
    Ts3IdProgress progress;
-
    if (getTs3Ids(srvConHdlId, conStatus, clientId, channelId,
                  clientName, progress))
    {
+      unsigned int rk = ts3Functions.getClientList(srvConHdlId, clientIDs);
+      if (rk != ERROR_ok)
+         logError("failed to get client list");
       unsigned int rc = ts3Functions.sendPluginCommand(
                srvConHdlId,
                pluginID,
                message.toStdString().c_str(),
                0,
-               CLIENTID_ARRAY,//<== TODO: Get all clientids
+               clientIDs,
                NULL);
 
       if (rc != ERROR_ok)

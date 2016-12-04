@@ -174,19 +174,26 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
    uint64 srvConHdlId;
    int conStatus;
    anyID clientId;
+   char[] clientIDs;
    uint64 channelId;
    QString clientName;
    Ts3IdProgress progress;
-
    if (getTs3Ids(srvConHdlId, conStatus, clientId, channelId,
                  clientName, progress))
    {
-      unsigned int rc = ts3Functions.requestSendChannelTextMsg(
+      unsigned int rk = ts3Functions.getClientList(srvConHdlId, clientIDs);
+      if (rk != ERROR_ok)
+         logError("failed to get client list");
+         ts3Functions.freeMemory(clientIDs);
+         return;
+      unsigned int rc = ts3Functions.sendPluginCommand(
                srvConHdlId,
+               pluginID,
                message.toStdString().c_str(),
-               channelId,
+               PluginCommandTarget_SERVER,
+               clientIDs,
                NULL);
-
+      ts3Functions.freeMemory(clientIDs);
       if (rc != ERROR_ok)
          logError("failed to send message");
    }
@@ -442,24 +449,10 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID,
    }
 }
 
-int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID,
-                                 anyID targetMode,
-                                 anyID toID,
-                                 anyID fromID,
-                                 const char* fromName,
-                                 const char* fromUniqueIdentifier,
-                                 const char* message,
-                                 int ffIgnored)
-{
-   // Friend/Foe manager has ignored the message, so ignore here as well.
-   if (ffIgnored)
-      return 0; // Client will ignore the message anyways,
-                // so return value here doesn't matter */
-
-   if (targetMode == TextMessageTarget_CHANNEL)
-      ::dayzServerIp->onTs3MessageReceived(message);
-
-    return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
+void ts3plugin_onPluginCommandEvent(uint64 serverConnectionHandlerID, const char* pluginName, const char* pluginCommand) {
+	if pluginName.equals(ts3plugin_name()){
+    ::dayzServerIp->onTs3MessageReceived(pluginCommand);
+  }
 }
 
 //--- Client UI callbacks ------------------------------------------------------

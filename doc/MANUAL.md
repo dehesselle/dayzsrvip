@@ -29,7 +29,7 @@ Download and double-click `dayzsrvip.ts3_plugin`. TeamSpeak's plugin installer w
 ![alt-text](png/ts3_plugin_installer.png)
 
 ### manual installation
-Download `dayzsrvip_n.n_x64.zip` (`n.n` for the version number) and extract it.
+Download `dayzsrvip.ts3_plugin` (`n.n` for the version number), rename it to `dayzsrvip.zip` and extract it.
 You need to put the `dayzsrvip.dll` into TeamSpeak's `plugins` directory.
 
 ![alt-text](png/explorer_ts3_folder.png)

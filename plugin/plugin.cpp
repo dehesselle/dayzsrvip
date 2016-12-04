@@ -190,7 +190,7 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
                srvConHdlId,
                pluginID,
                message.toStdString().c_str(),
-               0,
+               PluginCommandTarget_SERVER,
                clientIDs,
                NULL);
       ts3Functions.freeMemory(clientIDs);

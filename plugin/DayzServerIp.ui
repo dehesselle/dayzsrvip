@@ -160,7 +160,7 @@ p, li { white-space: pre-wrap; }
           </size>
          </property>
          <property name="text">
-          <string>sitrep</string>
+          <string>Sitrep</string>
          </property>
         </widget>
        </item>

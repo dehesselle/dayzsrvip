@@ -4,6 +4,12 @@
  * https://github.com/dehesselle/dayzsrvip
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/types.h>
 #include "DayzServerIp.h"
 #include "ui_DayzServerIp.h"
 #include <QFileDialog>
@@ -20,6 +26,8 @@
 #include <QMessageBox>
 #include "Log.h"
 #include "DebugDialog.h"
+
+const char* DAYZ_PROCESS = "dayzsa.exe"
 
 const char* DayzServerIp::LOCALINFO_SERVER_INIT = "___SERVER_NAME___";
 const char* DayzServerIp::LOCALINFO_SERVER_IP_INIT = "___SERVER_IP___";
@@ -213,26 +221,51 @@ void DayzServerIp::updateRemoteInfo(QString info,
 
 void DayzServerIp::updateLocalInfo(QStringList info)
 {
-   static QString oldServerName = LOCALINFO_SERVER_INIT;
-   static QString oldServerIp = LOCALINFO_SERVER_IP_INIT;
-   static QString oldCharName = LOCALINFO_CHAR_NAME_INIT;
-   static QString oldTs3Name = LOCALINFO_TS3_NAME_INIT;
+   pid_t pid = getProcess(DAYZ_PROCESS);
+   if (pid == -1) {
+       printf("%s: not found\n", DAYZ_PROCESS);
+       static QString oldServerName = LOCALINFO_SERVER_INIT;
+       static QString oldServerIp = LOCALINFO_SERVER_IP_INIT;
+       static QString oldCharName = LOCALINFO_CHAR_NAME_INIT;
+       static QString oldTs3Name = LOCALINFO_TS3_NAME_INIT;
 
-   QString ts3Name = info.at(LIF_TS3_NAME);
-   QString charName = info.at(LIF_INGAME_NAME);
-   QString serverName = info.at(LIF_SERVER_NAME);
-   QString serverIp = info.at(LIF_SERVER_IP);
+       QString ts3Name = info.at(LIF_TS3_NAME);
+       QString charName = info.at(LIF_INGAME_NAME);
+       QString serverName = "Currently not playing.";
+       QString serverIp = "0.0.0.0";
 
-   QString html = ui->tbLocalInfo->toHtml();
-   html.replace(oldTs3Name, ts3Name);
-   html.replace(oldCharName, charName);
-   html.replace(oldServerName, serverName);
-   html.replace(oldServerIp, serverIp);
-   ui->tbLocalInfo->setHtml(html);
+       QString html = ui->tbLocalInfo->toHtml();
+       html.replace(oldTs3Name, ts3Name);
+       html.replace(oldCharName, charName);
+       html.replace(oldServerName, serverName);
+       html.replace(oldServerIp, serverIp);
+       ui->tbLocalInfo->setHtml(html);
 
-   oldCharName = charName;
-   oldServerName = serverName;
-   oldServerIp = serverIp;
+       oldCharName = charName;
+       oldServerName = serverName;
+       oldServerIp = serverIp;
+   } else {
+       static QString oldServerName = LOCALINFO_SERVER_INIT;
+       static QString oldServerIp = LOCALINFO_SERVER_IP_INIT;
+       static QString oldCharName = LOCALINFO_CHAR_NAME_INIT;
+       static QString oldTs3Name = LOCALINFO_TS3_NAME_INIT;
+
+       QString ts3Name = info.at(LIF_TS3_NAME);
+       QString charName = info.at(LIF_INGAME_NAME);
+       QString serverName = info.at(LIF_SERVER_NAME);
+       QString serverIp = info.at(LIF_SERVER_IP);
+
+       QString html = ui->tbLocalInfo->toHtml();
+       html.replace(oldTs3Name, ts3Name);
+       html.replace(oldCharName, charName);
+       html.replace(oldServerName, serverName);
+       html.replace(oldServerIp, serverIp);
+       ui->tbLocalInfo->setHtml(html);
+
+       oldCharName = charName;
+       oldServerName = serverName;
+       oldServerIp = serverIp;
+   }
 }
 
 void DayzServerIp::onFsWatcherFileChanged(const QString& path)
@@ -534,4 +567,43 @@ void DayzServerIp::updateRunCount(int count)
    else
       m_settings.setValue(INI_RUN_COUNT,
                           m_settings.value(INI_RUN_COUNT).toInt() + 1);
+}
+
+pid_t DayzServerIp::getProcess(const char* name)
+{
+    DIR* dir;
+    struct dirent* ent;
+    char* endptr;
+    char buf[512];
+
+    if (!(dir = opendir("/proc"))) {
+        perror("can't open /proc");
+        return -1;
+    }
+
+    while((ent = readdir(dir)) != NULL) {
+        /* if endptr is not a null character, the directory is not
+         * entirely numeric, so ignore it */
+        long lpid = strtol(ent->d_name, &endptr, 10);
+        if (*endptr != '\0') {
+            continue;
+        }
+        /* try to open the cmdline file */
+        snprintf(buf, sizeof(buf), "/proc/%ld/cmdline", lpid);
+        FILE* fp = fopen(buf, "r");
+        if (fp) {
+            if (fgets(buf, sizeof(buf), fp) != NULL) {
+                /* check the first token in the file, the program name */
+                char* first = strtok(buf, " ");
+                if (!strcmp(first, name)) {
+                    fclose(fp);
+                    closedir(dir);
+                    return (pid_t)lpid;
+                }
+            }
+            fclose(fp);
+        }
+    }
+    closedir(dir);
+    return -1;
 }

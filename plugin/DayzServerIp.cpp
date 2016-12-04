@@ -287,8 +287,8 @@ DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& message
 
 void DayzServerIp::setupRemoteInfo()
 {
-   m_remoteInfo.setHorizontalHeaderItem(USMF_TS3_NAME, new QStandardItem("TS3"));
-   m_remoteInfo.setHorizontalHeaderItem(USMF_INGAME_NAME, new QStandardItem("in-game"));
+   m_remoteInfo.setHorizontalHeaderItem(USMF_TS3_NAME, new QStandardItem("TS3 Name"));
+   m_remoteInfo.setHorizontalHeaderItem(USMF_INGAME_NAME, new QStandardItem("Ingame Name"));
    m_remoteInfo.setHorizontalHeaderItem(USMF_SERVER_NAME, new QStandardItem("Server"));
    m_remoteInfo.setHorizontalHeaderItem(USMF_SERVER_IP, new QStandardItem("IP"));
    m_remoteInfo.setHorizontalHeaderItem(USMF_TIMESTAMP, new QStandardItem("Timestamp"));

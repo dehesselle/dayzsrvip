@@ -197,7 +197,7 @@ void DayzServerIp::updatePlayerList(const Player& player,
 
          logDebug("updatePlayerList() update");
 
-         QStandardItem* firstItem = itemList.at(RIC_TS3_NAME);
+         QStandardItem* firstItem = itemList.first();
          int row = firstItem->row();
 
          QList<QStandardItem*> items;

@@ -21,6 +21,8 @@ Just to make sure there's no misunderstanding: you and all your friends need to 
 (If it did, that would be real magic!)
 
 ## Install plugin
+:warning: __not updated yet to reflect myteamspeak.com__
+
 You can choose to install the plugin manually (download the `.zip`) or automatically (download the `.ts3_plugin`).
 
 ### automatic installation
@@ -56,19 +58,22 @@ This is what it looks like on its first start.
 
 ## Description
 
-Most of the upper half of the window is the "local info" section __(1)__. This is where your TS3 name, in-game name, server name and IP are shown. The lower half is the "remote info" section __(2)__. It shows everybody else's in-game name, server name and server IP along with a timestamp to indicate when the last update was received.
+Most of the upper half of the window is the "player" section __(1)__. This is where your TS3 name, DayZ character name, server name and IP are shown. The lower half is the "player list" section __(2)__. It shows everybody else's TS3 name, DayZ character name etc. along with a timestamp to indicate when the last update was received.
 
 ![alt-text](png/main_window_init_annotated.png)
 
-The buttons __(3)__ and __(4)__ are to select your `.DayzProfile` file and to turn this thing on and off. `on` __(4)__ means that your data will be sent to other clients in your TeamSpeak channel. It's disabled until you have chosen a valid `.DayZProfile` with the `Open...` button __(3)__. While the plugin will remember your profile from now on, it'll always start in `off` mode __(4)__ on purpose.
+The buttons __(3)__ and __(4)__ are to select your `.DayzProfile` file and to turn this thing on and off. `on` __(4)__ means that your data will be sent to other clients in your TeamSpeak channel. It's disabled until you have chosen a valid `.DayZProfile` with the `Open...` button __(3)__. While the plugin will remember your profile from now on, it'll always start in `off` mode __(4)__ on purpose.  
+You cannot see the data that it transmitted between plugins. But you can enable the `Chat` checkbox to also send this data as text message to the channel's chat.
 
-The "remote info" section __(2)__ gets updated automatically whenever somebody joins a server. That also means that there won't be any updates in between, while everyone is playing. So if you're late to the party and everybody else has already joined a server, you'll have missed all those initial updates - and that's not good, is it? That's what the `sitrep` button __(5)__ is there for. You can manually request an update message from all other clients to get you started.
+The "player list" section __(2)__ gets updated automatically whenever somebody joins a DayZ server. That also means that there won't be any updates in between, while everyone is playing. So if you're late to the party and everybody else has already joined a server, you'll have missed all those initial updates - and that's not good, is it? That's what the `Sitrep` button __(5)__ is there for. You can manually request a situation report from all other clients to get you updated.
 
 The `Clear` button __(6)__ is hopefully self-explanatory, it gets rid of all the data in the "remote info" __(2)__ section.
 
-The `Debug...` and `Log` buttons __(7)__ are there to help me with debugging.
+The `Log` button __(7)__ is there to quickly open TeamSpeak's logfile, this helps with debugging.
 
 # How does this work?
 It's not magic, that's for sure!
 
-Whenever there are changes to your `.DayZProfile` file, the plugin gathers server IP, server name and in-game name from it and sends a text message to your current channel in TeamSpeak. Those messages are plain text messages (you could even type them in yourself), but have a specific format so that the plugin can pick up on them. Pretty simple, eh? :wink:
+Whenever there are changes to your `.DayZProfile` file, the plugin gathers server IP, server name and character name from it and sends an internal (as in: invisible) message to your current channel in TeamSpeak. All clients with this plugin process this message and use it to update the "player list" __(2)__.
+
+No tricks are used; there is no interference with BattlEye, VAC, ... whatever. You don't need to take my word for it, the sourcecode is available for a reason.

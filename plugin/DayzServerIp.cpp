@@ -467,6 +467,8 @@ void DayzServerIp::on_pbProfileOpen_clicked()
    else   // file dialog has been cancelled
    {
       ui->rbOn->setEnabled(false);
+      ui->tbPlayer->setHtml(m_playerHtml);
+      m_player.initialize();
       m_fsWatcher->removePaths(m_fsWatcher->files());
    }
 }

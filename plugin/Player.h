@@ -58,6 +58,7 @@ public:
 
    const bool& isChanged();
    bool hasDayzProfile() const;
+   void initialize();
 
 private:
    void setDayzNameOld(const QString& dayzName);

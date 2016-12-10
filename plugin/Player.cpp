@@ -38,16 +38,7 @@ const char* Player::INIT_TS3NAME = "___TS3_NAME___";
 Player::Player() :
    m_isChanged(false)
 {
-   setDayzName(INIT_DAYZNAME);
-   setServerIp(INIT_SERVERIP);
-   setServerName(INIT_SERVERNAME);
-   setTs3Name(INIT_TS3NAME);
-
-   setDayzNameOld(INIT_DAYZNAME);
-   setServerIpOld(INIT_SERVERIP);
-   setServerNameOld(INIT_SERVERNAME);
-
-   updateTimestamp();
+   initialize();
 }
 
 bool Player::fromDayzProfile(QString filename)
@@ -281,4 +272,18 @@ bool Player::hasDayzProfile() const
       result = true;
 
    return result;
+}
+
+void Player::initialize()
+{
+   setDayzName(INIT_DAYZNAME);
+   setServerIp(INIT_SERVERIP);
+   setServerName(INIT_SERVERNAME);
+   setTs3Name(INIT_TS3NAME);
+
+   setDayzNameOld(INIT_DAYZNAME);
+   setServerIpOld(INIT_SERVERIP);
+   setServerNameOld(INIT_SERVERNAME);
+
+   updateTimestamp();
 }

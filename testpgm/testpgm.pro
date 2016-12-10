@@ -14,22 +14,20 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
     ../plugin/DayzServerIp.cpp \
-    ../plugin/DebugDialog.cpp \
     ../plugin/IniFile.cpp \
     ../plugin/Player.cpp \
     ../plugin/Log.cpp
 
 HEADERS  += ../plugin/DayzServerIp.h \
-    ../plugin/DebugDialog.h \
     ../plugin/IniFile.h \
     ../plugin/Log.h \
-    ../plugin/Player.h \
-    ../plugin/Version.h
+    ../plugin/Player.h
 
-FORMS    += ../plugin/DayzServerIp.ui \
-    ../plugin/DebugDialog.ui
+FORMS    += ../plugin/DayzServerIp.ui
 
 RESOURCES += \
     ../plugin/dayzsrvip.qrc
+
+DEFINES += DAYZSERVERIP_VERSION=\\\"$$system(C:/Portable/msys64/usr/bin/git --git-dir $$PWD/../.git --work-tree $$PWD describe --always --tags)\\\"
 
 INCLUDEPATH += $$PWD/../plugin

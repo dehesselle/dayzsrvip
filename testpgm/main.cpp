@@ -6,7 +6,6 @@
 
 #include "DayzServerIp.h"
 #include <QApplication>
-#include "Version.h"
 #include "Log.h"
 
 int main(int argc, char *argv[])

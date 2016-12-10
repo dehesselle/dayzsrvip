@@ -11,7 +11,6 @@
 #include <QString>
 #include <QFile>
 #include <QTextStream>
-#include <QRegExp>
 #include <QList>
 #include <QThread>
 #include <QDateTime>
@@ -19,16 +18,18 @@
 #include <QDir>
 #include <QMessageBox>
 #include "Log.h"
-#include "DebugDialog.h"
 
-const char* DayzServerIp::LOCALINFO_SERVER_INIT = "___SERVER_NAME___";
-const char* DayzServerIp::LOCALINFO_SERVER_IP_INIT = "___SERVER_IP___";
-const char* DayzServerIp::LOCALINFO_CHAR_NAME_INIT = "___CHAR_NAME___";
-const char* DayzServerIp::LOCALINFO_TS3_NAME_INIT = "___TS3_NAME___";
+const char* DayzServerIp::PLAYER_SERVERNAME_INIT = "___SERVER_NAME___";
+const char* DayzServerIp::PLAYER_SERVERIP_INIT = "___SERVER_IP___";
+const char* DayzServerIp::PLAYER_INGAMENAME_INIT = "___CHAR_NAME___";
+const char* DayzServerIp::PLAYER_TS3NAME_INIT = "___TS3_NAME___";
 
-const char* DayzServerIp::MSG_STR_UPDATE_SERVER = "[dayzsrvip|2|server]";
-const char* DayzServerIp::MSG_STR_REQUEST_SITREP = "[dayzsrvip|2|sitrep]";
-const char* DayzServerIp::MSG_STR_SEPARATOR = "###";
+const char* DayzServerIp::XML_NAME = "dayzsrvip";
+const char* DayzServerIp::XML_VERSION = "version";
+const char* DayzServerIp::XML_VERSION_VALUE = "1";
+const char* DayzServerIp::XML_COMMAND = "command";
+const char* DayzServerIp::XML_COMMAND_SITREP = "sitrep";
+const char* DayzServerIp::XML_COMMAND_UPDATE = "update";
 
 const IniFile::KeyValue DayzServerIp::INI_VERSION_NO = { "DayzServerIp/version", "" };
 const IniFile::KeyValue DayzServerIp::INI_RUN_COUNT = { "DayzServerIp/runCount", "0" };
@@ -58,13 +59,6 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->pbProfileOpen->setToolTip("select your DayZ profile file");
       ui->pbLogOpen->setToolTip("open TeamSpeak log");
 
-#ifdef DEVELOPER_MODE
-      ui->pbDebugOpen->setEnabled(true);
-#else
-      ui->pbDebugOpen->setEnabled(false);
-      ui->pbDebugOpen->setToolTip("sorry - developer only :)");
-#endif
-
       ui->gvLogo->setToolTip("DayZ is the game!");
 
       setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -73,7 +67,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
    logDebug("m_settings.openFile()");
    m_settings.openFile(m_configPath + "/dayzsrvip.ini");
-   m_remoteInfoFile = m_configPath + "/dayzsrvip.hst";
+   m_playerListFile = m_configPath + "/dayzsrvip.hst";
    checkVersionNo();   // this has to called ASAP to handle version changes
 
    // show DayZ Logo
@@ -84,22 +78,24 @@ DayzServerIp::DayzServerIp(QWidget *parent,
    }
 
    logDebug("setupRemoteInfo()");
-   setupRemoteInfo();   // setup columns in treeview
+   setupPlayerList();   // setup columns in treeview
 
    // import history from file
    {
-      QFile history(m_remoteInfoFile);
+      QFile history(m_playerListFile);
 
       if (history.open(QFile::ReadOnly))
       {
          logDebug("importing history from: " + history.fileName());
 
-         QTextStream in(&history);
+         QXmlStreamReader xml(&history);
 
-         while (! in.atEnd())
+         while (! xml.atEnd() &&
+                xml.readNextStartElement())
          {
-            QString line = in.readLine();
-            updateRemoteInfo(line, false);
+            Player player;
+            player.fromXml(xml);
+            updatePlayerList(player, false);
          }
       }
       else
@@ -108,16 +104,17 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       }
    }
 
-   m_player.m_ts3Name = LOCALINFO_TS3_NAME_INIT;
+   m_player.setTs3Name(PLAYER_TS3NAME_INIT);
 
+   // import .DayZProfile
    {
-      QString dayzProfile = m_settings.value(Player::INI_DAYZ_PROFILE).toString();
+      QString dayzProfile = m_settings.value(Player::INI_DAYZPROFILE).toString();
 
       if (QFile::exists(dayzProfile))
       {
-         if (m_player.importFromFile(dayzProfile))
+         if (m_player.fromDayzProfile(dayzProfile))
          {
-            updateLocalInfo(m_player.toLocalInfo());
+            updatePlayer();
             m_fsWatcher->addPath(dayzProfile);
             ui->rbOn->setEnabled(true);
          }
@@ -140,99 +137,89 @@ DayzServerIp::~DayzServerIp()
 
 void DayzServerIp::setTs3Name(const QString& name)
 {
-   m_player.m_ts3Name = name;
-   updateLocalInfo(m_player.toLocalInfo());
+   m_player.setTs3Name(name);
+   updatePlayer();
 }
 
-void DayzServerIp::updateRemoteInfo(QString info,
-                                    bool saveInfo)
+void DayzServerIp::updatePlayerList(const Player& player,
+                                    bool saveToFile)
 {
-   QRegExp regex(MSG_STR_SEPARATOR);
-   QStringList infoFields = info.split(regex);
+   QList<QStandardItem*> itemList = m_playerListModel.findItems(player.getTs3Name());
 
-   switch (toMessageType(infoFields))
+   switch (itemList.count())
    {
-      case MessageType::UPDATE_SERVER:
+      case 0:   // insert new item
       {
-         infoFields.pop_front();   // lose the message ID
-         QString name = infoFields.at(USMF_TS3_NAME);
-         QList<QStandardItem*> itemList = m_remoteInfo.findItems(name);
+         logDebug("updateRemoteInfo: new");
 
-         switch (itemList.count())
-         {
-            case 0:   // insert new item
-            {
-               logDebug("updateRemoteInfo: new");
+         int row = m_playerListModel.rowCount();
 
-               int row = m_remoteInfo.rowCount();
+         QStandardItem* item = new QStandardItem(player.getDayzName());
+         m_playerListModel.setItem(row, RIC_INGAME_NAME, item);
+         item = new QStandardItem(player.getTs3Name());
+         m_playerListModel.setItem(row, RIC_TS3_NAME, item);
+         item = new QStandardItem(player.getServerName());
+         m_playerListModel.setItem(row, RIC_SERVER_NAME, item);
+         item = new QStandardItem(player.getServerIp());
+         m_playerListModel.setItem(row, RIC_SERVER_IP, item);
+         item = new QStandardItem(player.getTimestamp());
+         m_playerListModel.setItem(row, RIC_TIMESTAMP, item);
 
-               for (int i = 0; i < infoFields.count(); i++)
-               {
-                  QStandardItem* item = new QStandardItem(infoFields.at(i));
-                  m_remoteInfo.setItem(row, i, item);
-               }
-               break;
-            }
-            case 1:   // update existing item
-            {
-               logDebug("updateRemoteInfo: update");
-
-               QStandardItem* firstItem = itemList.at(USMF_TS3_NAME);
-               int row = firstItem->row();
-
-               QList<QStandardItem*> items;
-               for (int col = 0; col < m_remoteInfo.columnCount(); col++)
-                  if (col)
-                     items << m_remoteInfo.item(row, col)->clone();
-                  else
-                     items << new QStandardItem(QString(""));
-
-               firstItem->insertRow(0, items);
-
-               for (int col = 1; col < m_remoteInfo.columnCount(); col++)
-                  m_remoteInfo.item(row, col)->setText(infoFields.at(col));
-
-               break;
-            }
-            default:
-               break;
-         }
-
-         sortRemoteInfo();
-         if (saveInfo)
-            saveRemoteInfo(info);
          break;
       }
-      case MessageType::REQUEST_SITREP:
-      case MessageType::INVALID:
+      case 1:   // update existing item
       {
+         logDebug("updateRemoteInfo: update");
+
+         QStandardItem* firstItem = itemList.at(RIC_TS3_NAME);
+         int row = firstItem->row();
+
+         QList<QStandardItem*> items;
+         for (int col = 0; col < m_playerListModel.columnCount(); col++)
+            if (col)
+               items << m_playerListModel.item(row, col)->clone();
+            else   // first column (TS3 name) doesn't get cloned
+               items << new QStandardItem(QString(""));
+
+         firstItem->insertRow(0, items);
+
+         m_playerListModel.item(row, RIC_INGAME_NAME)->setText(player.getDayzName());
+         m_playerListModel.item(row, RIC_SERVER_NAME)->setText(player.getServerName());
+         m_playerListModel.item(row, RIC_SERVER_IP)->setText(player.getServerIp());
+         m_playerListModel.item(row, RIC_TIMESTAMP)->setText(player.getTimestamp());
+
          break;
       }
+      default:
+         break;
    }
+
+   sortPlayerList();
+   if (saveToFile)
+      savePlayerListEntry(player);
 }
 
-void DayzServerIp::updateLocalInfo(QStringList info)
+void DayzServerIp::updatePlayer()
 {
-   static QString oldServerName = LOCALINFO_SERVER_INIT;
-   static QString oldServerIp = LOCALINFO_SERVER_IP_INIT;
-   static QString oldCharName = LOCALINFO_CHAR_NAME_INIT;
-   static QString oldTs3Name = LOCALINFO_TS3_NAME_INIT;
+   // Why do we keep extra variables here for old data instead using
+   // Player::m_oldData? - Design decision! This is GUI-specific and
+   // Player is not supposed to care about GUI-specifics.
+   static QString oldServerName = PLAYER_SERVERNAME_INIT;
+   static QString oldServerIp = PLAYER_SERVERIP_INIT;
+   static QString oldCharName = PLAYER_INGAMENAME_INIT;
+   static QString oldTs3Name = PLAYER_TS3NAME_INIT;
 
-   QString ts3Name = info.at(LIF_TS3_NAME);
-   QString charName = info.at(LIF_INGAME_NAME);
-   QString serverName = info.at(LIF_SERVER_NAME);
-   QString serverIp = info.at(LIF_SERVER_IP);
+   QString html = ui->tbPlayer->toHtml();
+   html.replace(oldTs3Name, m_player.getTs3Name().toHtmlEscaped());
+   html.replace(oldCharName, m_player.getDayzName().toHtmlEscaped());
+   html.replace(oldServerName, m_player.getServerName().toHtmlEscaped());
+   html.replace(oldServerIp, m_player.getServerIp().toHtmlEscaped());
+   ui->tbPlayer->setHtml(html);
 
-   QString html = ui->tbLocalInfo->toHtml();
-   html.replace(oldTs3Name, ts3Name);
-   html.replace(oldCharName, charName);
-   html.replace(oldServerName, serverName);
-   html.replace(oldServerIp, serverIp);
-   ui->tbLocalInfo->setHtml(html);
-
-   oldCharName = charName;
-   oldServerName = serverName;
-   oldServerIp = serverIp;
+   oldCharName = m_player.getDayzName().toHtmlEscaped();
+   oldServerName = m_player.getServerName().toHtmlEscaped();
+   oldServerIp = m_player.getServerIp().toHtmlEscaped();
+   oldTs3Name = m_player.getTs3Name().toHtmlEscaped();
 }
 
 void DayzServerIp::onFsWatcherFileChanged(const QString& path)
@@ -259,76 +246,71 @@ void DayzServerIp::on_rbOff_clicked()
 
 void DayzServerIp::on_pbRemoteInfoClear_clicked()
 {
-   if (! QFile::remove(m_remoteInfoFile))
-      logError("failed to remove history file: " + m_remoteInfoFile);
+   if (! QFile::remove(m_playerListFile))
+      logError("failed to remove history file: " + m_playerListFile);
 
-   m_remoteInfo.clear();
-   setupRemoteInfo();
+   m_playerListModel.clear();
+   setupPlayerList();
    setStatusMessage("cleared all data");
 }
 
-DayzServerIp::MessageType DayzServerIp::toMessageType(const QStringList& message)
+void DayzServerIp::setupPlayerList()
 {
-   MessageType result = MessageType::INVALID;
-   int count = message.count() - 1;   // remove message ID
-
-   if (message.at(0) == MSG_STR_UPDATE_SERVER)
-   {
-      if (count == USMF_COUNT)
-         result = MessageType::UPDATE_SERVER;
-   }
-   else if (message.at(0) == MSG_STR_REQUEST_SITREP)
-   {
-      result = MessageType::REQUEST_SITREP;
-   }
-
-   return result;
+   m_playerListModel.setHorizontalHeaderItem(RIC_TS3_NAME, new QStandardItem("TS3 name"));
+   m_playerListModel.setHorizontalHeaderItem(RIC_INGAME_NAME, new QStandardItem("ingame name"));
+   m_playerListModel.setHorizontalHeaderItem(RIC_SERVER_NAME, new QStandardItem("Server"));
+   m_playerListModel.setHorizontalHeaderItem(RIC_SERVER_IP, new QStandardItem("IP"));
+   m_playerListModel.setHorizontalHeaderItem(RIC_TIMESTAMP, new QStandardItem("Timestamp"));
+   ui->tvPlayerList->setModel(&m_playerListModel);
+   ui->tvPlayerList->setColumnWidth(RIC_TS3_NAME, 95);
+   ui->tvPlayerList->setColumnWidth(RIC_INGAME_NAME, 110);
+   ui->tvPlayerList->setColumnWidth(RIC_SERVER_NAME, 200);
+   ui->tvPlayerList->setColumnWidth(RIC_SERVER_IP, 125);
+   ui->tvPlayerList->setColumnWidth(RIC_TIMESTAMP, 80);
 }
 
-void DayzServerIp::setupRemoteInfo()
+void DayzServerIp::onTs3CommandReceived(const QString &command)
 {
-   m_remoteInfo.setHorizontalHeaderItem(USMF_TS3_NAME, new QStandardItem("TS3"));
-   m_remoteInfo.setHorizontalHeaderItem(USMF_INGAME_NAME, new QStandardItem("in-game"));
-   m_remoteInfo.setHorizontalHeaderItem(USMF_SERVER_NAME, new QStandardItem("Server"));
-   m_remoteInfo.setHorizontalHeaderItem(USMF_SERVER_IP, new QStandardItem("IP"));
-   m_remoteInfo.setHorizontalHeaderItem(USMF_TIMESTAMP, new QStandardItem("Timestamp"));
-   ui->tvRemoteInfo->setModel(&m_remoteInfo);
-   ui->tvRemoteInfo->setColumnWidth(USMF_TS3_NAME, 95);
-   ui->tvRemoteInfo->setColumnWidth(USMF_INGAME_NAME, 110);
-   ui->tvRemoteInfo->setColumnWidth(USMF_SERVER_NAME, 200);
-   ui->tvRemoteInfo->setColumnWidth(USMF_SERVER_IP, 125);
-   ui->tvRemoteInfo->setColumnWidth(USMF_TIMESTAMP, 80);
-}
+   QXmlStreamReader xml(command);
 
-void DayzServerIp::onTs3MessageReceived(const QString &message)
-{
-   QRegExp regex(MSG_STR_SEPARATOR);
-   QStringList messageParts = message.split(regex);
-
-   switch (toMessageType(messageParts))
+   while (! xml.atEnd())
    {
-      case MessageType::UPDATE_SERVER:
-         updateRemoteInfo(message, true);
-         setStatusMessage("Update from teammate received.");
-         break;
-      case MessageType::REQUEST_SITREP:
-         // There are two ways to handle a REQUEST_SITREP:
-         // - just send the current data with
-         //   requestSendTs3Message(m_player.toMessage())     or
-         // - processProfile(...)
-         // Since we're still hunting bugs, the later approach is used here
-         // to make sure we don't have stale data.
-         processProfile(m_settings.value(Player::INI_DAYZ_PROFILE).toString(),
-                        true);
-         break;
-      case MessageType::INVALID:
-         break;
+      if (xml.isStartElement() &&
+          xml.name() == XML_NAME &&
+          xml.attributes().hasAttribute(XML_VERSION) &&
+          xml.attributes().value(XML_VERSION) == XML_VERSION_VALUE)
+      {
+         QString command(xml.attributes().value(XML_COMMAND).toString());
+
+         if (command == XML_COMMAND_SITREP)
+         {
+            requestSendTs3Command(createCommandUpdate());
+            setStatusMessage("Sent update to teammates.");
+
+         }
+         else if (command == XML_COMMAND_UPDATE &&
+                  xml.readNext())
+         {
+            Player player;
+            player.fromXml(xml);
+            updatePlayerList(player, true);
+         }
+      }
+      xml.readNext();
    }
 }
 
 void DayzServerIp::setStatusMessage(const QString &message)
 {
    ui->lMessage->setText(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + message);
+}
+
+void DayzServerIp::requestSendTs3Command(const QString& command)
+{
+   if (ui->rbOn->isChecked())
+      emit sendTs3Command(command);
+   else
+      setStatusMessage("Not responding - still 'off'.");
 }
 
 void DayzServerIp::requestSendTs3Message(const QString &message)
@@ -339,20 +321,24 @@ void DayzServerIp::requestSendTs3Message(const QString &message)
       setStatusMessage("Not responding - still 'off'.");
 }
 
-void DayzServerIp::sortRemoteInfo()
+void DayzServerIp::sortPlayerList()
 {
-   m_remoteInfo.sort(ui->tvRemoteInfo->header()->sortIndicatorSection(),
-                     ui->tvRemoteInfo->header()->sortIndicatorOrder());
+   m_playerListModel.sort(ui->tvPlayerList->header()->sortIndicatorSection(),
+                     ui->tvPlayerList->header()->sortIndicatorOrder());
 }
 
-void DayzServerIp::saveRemoteInfo(const QString &text)
+void DayzServerIp::savePlayerListEntry(const Player& player)
 {
-   QFile history(m_remoteInfoFile);
+   QFile history(m_playerListFile);
 
    if (history.open(QFile::Append))
    {
+      QString xmlStr;
+      QXmlStreamWriter xml(&xmlStr);
+      player.toXml(xml);
+
       QTextStream out(&history);
-      out << text << "\n";
+      out << xmlStr << "\n";
    }
    else
    {
@@ -366,9 +352,9 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
 
    if (versionFromFile != DAYZSERVERIP_VERSION)
    {
-      if (QFile::exists(m_remoteInfoFile))
+      if (QFile::exists(m_playerListFile))
       {
-         if (QFile::remove(m_remoteInfoFile))
+         if (QFile::remove(m_playerListFile))
          {
             logInfo("version change: deleted history");
             m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
@@ -376,7 +362,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
          else
          {
             logError("version change: failed to remove history file "
-                     + m_remoteInfoFile);
+                     + m_playerListFile);
          }
       }
       else
@@ -446,12 +432,12 @@ void DayzServerIp::on_pbProfileOpen_clicked()
 
    if (QFile::exists(dayzProfile))
    {
-      if (m_player.importFromFile(dayzProfile))
+      if (m_player.fromDayzProfile(dayzProfile))
       {
-         m_settings.setValue(Player::INI_DAYZ_PROFILE, dayzProfile);
+         m_settings.setValue(Player::INI_DAYZPROFILE, dayzProfile);
 
-         if (m_player.m_isChanged)
-            updateLocalInfo(m_player.toLocalInfo());
+         if (m_player.isChanged())
+            updatePlayer();
 
          if (m_fsWatcher->files().count())
             m_fsWatcher->removePaths(m_fsWatcher->files());
@@ -480,13 +466,7 @@ void DayzServerIp::on_pbProfileOpen_clicked()
 void DayzServerIp::on_pbSitrepRequest_clicked()
 {
    setStatusMessage("Requesting sitrep from teammates.");
-   requestSendTs3Message(MSG_STR_REQUEST_SITREP);
-}
-
-void DayzServerIp::on_pbDebugOpen_clicked()
-{
-   DebugDialog* debugDialog = new DebugDialog(this);
-   debugDialog->show();
+   requestSendTs3Command(createCommandSitrep());
 }
 
 void DayzServerIp::processProfile(const QString &filename,
@@ -503,7 +483,7 @@ void DayzServerIp::processProfile(const QString &filename,
 
       count++;
 
-      if (m_player.importFromFile(filename))
+      if (m_player.fromDayzProfile(filename))
          break;
 
       QThread::sleep(1);
@@ -512,16 +492,16 @@ void DayzServerIp::processProfile(const QString &filename,
    if (count > 3)
       logError("unable to import DayZProfile after 3 attempts");
 
-   if (m_player.m_isChanged || forceUpdate)
+   if (m_player.isChanged() || forceUpdate)
    {
       if (forceUpdate)
          logDebug("forcing update");
 
-      updateLocalInfo(m_player.toLocalInfo());
+      updatePlayer();
 
       if (ui->rbOn->isChecked())
       {
-         requestSendTs3Message(m_player.toMessage());
+         requestSendTs3Command(createCommandUpdate());
          setStatusMessage("Sent update to teammates.");
       }
    }
@@ -534,4 +514,36 @@ void DayzServerIp::updateRunCount(int count)
    else
       m_settings.setValue(INI_RUN_COUNT,
                           m_settings.value(INI_RUN_COUNT).toInt() + 1);
+}
+
+QString DayzServerIp::createCommandUpdate()
+{
+   QString result;
+
+   QXmlStreamWriter xml(&result);
+   xml.writeStartDocument();
+   xml.writeStartElement(XML_NAME);
+   xml.writeAttribute(XML_VERSION, XML_VERSION_VALUE);
+   xml.writeAttribute(XML_COMMAND, XML_COMMAND_UPDATE);
+   m_player.updateTimestamp();
+   m_player.toXml(xml);
+   xml.writeEndElement();
+   xml.writeEndDocument();
+
+   return result;
+}
+
+QString DayzServerIp::createCommandSitrep()
+{
+   QString result;
+
+   QXmlStreamWriter xml(&result);
+   xml.writeStartDocument();
+   xml.writeStartElement(XML_NAME);
+   xml.writeAttribute(XML_VERSION, XML_VERSION_VALUE);
+   xml.writeAttribute(XML_COMMAND, XML_COMMAND_SITREP);
+   xml.writeEndElement();
+   xml.writeEndDocument();
+
+   return result;
 }

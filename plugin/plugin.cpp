@@ -66,6 +66,8 @@ static int wcharToUtf8(const wchar_t* str, char** result) {
 
 DayzServerIp* dayzServerIp = 0;   // main class of this plugin
 
+static const unsigned int ERROR_dummy = 999999;
+
 enum Ts3IdProgress   // all the various calls to TS3-functions that
                      // are made in getTs3Ids()
 {
@@ -100,20 +102,13 @@ const char* progressToStr(Ts3IdProgress progress)
    return "INVALID";   // just to avoid compiler warning
 }
 
-bool getTs3Ids(uint64& srvConHdlId,
-               int& conStatus,
-               anyID& clientId,
-               uint64& channelId,
-               QString& clientName,
-               Ts3IdProgress& progress)   // Get all the IDs - the "usual
-                                          // suspects" - we need to interact
-                                          // with TS3 API functions.
+bool getTs3SrvConHdlId(uint64& srvConHdlId,
+                       int& conStatus,
+                       Ts3IdProgress& progress)
 {
    bool result = false;
 
    progress = TIP_SERVER_CONNECTION_HANDLE;
-
-   static const unsigned int ERROR_dummy = 999999;
    unsigned int rc = ERROR_dummy;
 
    srvConHdlId = ts3Functions.getCurrentServerConnectionHandlerID();
@@ -133,6 +128,25 @@ bool getTs3Ids(uint64& srvConHdlId,
    }
 
    if (rc == ERROR_ok)
+      result = true;
+
+   return result;
+}
+
+bool getTs3Ids(uint64& srvConHdlId,
+               int& conStatus,
+               anyID& clientId,
+               uint64& channelId,
+               QString& clientName,
+               Ts3IdProgress& progress)   // Get all the IDs - the "usual
+                                          // suspects" - we need to interact
+                                          // with TS3 API functions.
+{
+   bool result = false;
+
+   unsigned int rc = ERROR_dummy;
+
+   if (getTs3SrvConHdlId(srvConHdlId, conStatus, progress))
    {
       progress = TIP_CLIENT_ID;
       rc = ts3Functions.getClientID(srvConHdlId, &clientId);
@@ -192,28 +206,40 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
    }
    else
    {
-      logError(QString("failed to get ID") + progressToStr(progress));
+      logError(QString("failed to get ID ") + progressToStr(progress));
    }
 }
+
+void sendCommandToChannel(QString command)
+{
+   uint64 srvConHdlId;
+   int conStatus;
+   Ts3IdProgress progress;
+
+   if (getTs3SrvConHdlId(srvConHdlId, conStatus, progress))
+   {
+      ts3Functions.sendPluginCommand(
+               srvConHdlId,
+               pluginID,
+               command.toStdString().c_str(),
+               PluginCommandTarget_CURRENT_CHANNEL,
+               0,
+               0);
+   }
+   else
+   {
+      logError(QString("failed to get ID ") + progressToStr(progress));
+   }
+}
+
 //------------------------------------------------------------------------------
 
 //**************************** Required functions ******************************
 
 /* Unique name identifying this plugin */
-const char* ts3plugin_name() {
-#ifdef _WIN32
-   /* TeamSpeak expects UTF-8 encoded characters. Following demonstrates a possibility how to convert UTF-16 wchar_t into UTF-8. */
-   static char* result = NULL;  /* Static variable so it's allocated only once */
-   if(!result) {
-      const wchar_t* name = L"DayZ Server IP";
-      if(wcharToUtf8(name, &result) == -1) {  /* Convert name into UTF-8 encoded result */
-         result = (char*)"DayZ Server IP";  /* Conversion failed, fallback here */
-      }
-   }
-   return result;
-#else
-   return "DayZ Server IP";
-#endif
+const char* ts3plugin_name()
+{
+   return "dayzsrvip";
 }
 
 /* Plugin version */
@@ -273,6 +299,9 @@ int ts3plugin_init()
       ::dayzServerIp->connect(::dayzServerIp,
                               &DayzServerIp::sendTs3Message,
                               sendMessageToChannel);
+      ::dayzServerIp->connect(::dayzServerIp,
+                              &DayzServerIp::sendTs3Command,
+                              sendCommandToChannel);
       result = 0;
    }
    else
@@ -442,24 +471,14 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID,
    }
 }
 
-int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID,
-                                 anyID targetMode,
-                                 anyID toID,
-                                 anyID fromID,
-                                 const char* fromName,
-                                 const char* fromUniqueIdentifier,
-                                 const char* message,
-                                 int ffIgnored)
+//--- Client rare callbacks ----------------------------------------------------
+
+void ts3plugin_onPluginCommandEvent(uint64 serverConnectionHandlerID,
+                                    const char* pluginName,
+                                    const char* pluginCommand)
 {
-   // Friend/Foe manager has ignored the message, so ignore here as well.
-   if (ffIgnored)
-      return 0; // Client will ignore the message anyways,
-                // so return value here doesn't matter */
-
-   if (targetMode == TextMessageTarget_CHANNEL)
-      ::dayzServerIp->onTs3MessageReceived(message);
-
-    return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
+   if (QString(pluginName) == ts3plugin_name())
+      ::dayzServerIp->onTs3CommandReceived(pluginCommand);
 }
 
 //--- Client UI callbacks ------------------------------------------------------

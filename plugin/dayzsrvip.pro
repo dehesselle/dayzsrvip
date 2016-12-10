@@ -15,15 +15,13 @@ SOURCES += plugin.cpp \
     DayzServerIp.cpp \
     IniFile.cpp \
     Player.cpp \
-    DebugDialog.cpp \
     Log.cpp
 
 HEADERS += plugin.h\
     DayzServerIp.h \
     IniFile.h \
     Log.h \
-    Player.h \
-    DebugDialog.h
+    Player.h
 
 INCLUDEPATH += $$PWD/../ts3psdk/include
 
@@ -33,8 +31,7 @@ unix {
 }
 
 FORMS += \
-    DayzServerIp.ui \
-    DebugDialog.ui
+    DayzServerIp.ui
 
 RESOURCES += \
     dayzsrvip.qrc

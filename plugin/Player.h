@@ -8,7 +8,9 @@
 #define PLAYER_H
 
 #include <QString>
-#include <QStringList>
+#include <QMap>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 #include "IniFile.h"
 
 class Player
@@ -16,29 +18,50 @@ class Player
 public:
    Player();
 
-   static const IniFile::KeyValue INI_DAYZ_PROFILE;
+   static const IniFile::KeyValue INI_DAYZPROFILE;
 
-   bool importFromFile(QString filename);
-   QString toMessage();
-   QStringList toLocalInfo();
+   static const char* XML_PLAYER;   ///< XML tag
+   static const char* XML_PLAYER_VERSION;
+   static const char* XML_PLAYER_VERSION_VALUE;
+   static const char* XML_TS3NAME;
+   static const char* XML_DAYZNAME;
+   static const char* XML_SERVERNAME;
+   static const char* XML_SERVERIP;
+   static const char* XML_TIMESTAMP;
 
-   QString m_dayzName;
-   QString m_ts3Name;
-   QString m_serverName;
-   QString m_serverIp;
-   QString m_timestamp;
+   static const char* DAYZPROFILE_PLAYERNAME;
+   static const char* DAYZPROFILE_LASTMPSERVER;
+   static const char* DAYZPROFILE_LASTMPSERVERNAME;
 
-   bool m_isChanged;
+   bool fromDayzProfile(QString filename);
+   void toXml(QXmlStreamWriter& xml) const;
+   void fromXml(QXmlStreamReader& xml);
+
+
+   void setDayzName(const QString& dayzName);
+   void setTs3Name(const QString& ts3Name);
+   void setServerName(const QString& serverName);
+   void setServerIp(const QString& serverIp);
+   void setTimestamp(const QString& timestamp);
+   void updateTimestamp();
+
+   QString getDayzName() const;
+   QString getTs3Name() const;
+   QString getServerName() const;
+   QString getServerIp() const;
+   QString getTimestamp() const;
+
+   const bool& isChanged();
 
 private:
-   void updateTimestamp();
+   typedef QMap<QString,QString> Data;
+   Data m_data;
+   Data m_dataOld;
+
    void updateChanged();
 
-   QString m_dayzNameOld;
-   QString m_serverNameOld;
-   QString m_serverIpOld;
-
    QString m_filename;
+   bool m_isChanged;
 };
 
 #endif // PLAYER_H

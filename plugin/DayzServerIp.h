@@ -13,6 +13,7 @@
 #include <QString>
 #include <QFileSystemWatcher>
 #include <QGraphicsScene>
+#include <QXmlStreamReader>
 #include "IniFile.h"
 #include "Player.h"
 
@@ -31,54 +32,36 @@ public:
 
    void setTs3Name(const QString& name);
 
-   enum class MessageType
+   enum RIC   // Remote Info Columns
    {
-      INVALID = 0,
-      UPDATE_SERVER,
-      REQUEST_SITREP
+      RIC_TS3_NAME = 0,
+      RIC_INGAME_NAME,
+      RIC_SERVER_NAME,
+      RIC_SERVER_IP,
+      RIC_TIMESTAMP,
+      RIC_COUNT
    };
 
-   MessageType toMessageType(const QStringList& message);
+   static const char* PLAYER_SERVERNAME_INIT;
+   static const char* PLAYER_SERVERIP_INIT;
+   static const char* PLAYER_INGAMENAME_INIT;
+   static const char* PLAYER_TS3NAME_INIT;
 
-   enum USMF   // Update Server Message Fields
-   {
-      USMF_TS3_NAME = 0,
-      USMF_INGAME_NAME,
-      USMF_SERVER_NAME,
-      USMF_SERVER_IP,
-      USMF_TIMESTAMP,
-      USMF_COUNT
-   };
-
-   enum LIF   // Local Info Fields
-   {
-      LIF_TS3_NAME = 0,
-      LIF_INGAME_NAME,
-      LIF_SERVER_NAME,
-      LIF_SERVER_IP,
-      LIF_COUNT
-   };
-
-   static const char* MSG_STR_UPDATE_SERVER;
-   static const char* MSG_STR_RENAME_CHAR;
-   static const char* MSG_STR_REQUEST_SITREP;
-   static const char* MSG_STR_SEPARATOR;
-
-   static const char* LOCALINFO_SERVER_INIT;
-   static const char* LOCALINFO_SERVER_IP_INIT;
-   static const char* LOCALINFO_CHAR_NAME_INIT;
-   static const char* LOCALINFO_TS3_NAME_INIT;
+   static const char* XML_NAME;
+   static const char* XML_VERSION;
+   static const char* XML_VERSION_VALUE;
+   static const char* XML_COMMAND;
+   static const char* XML_COMMAND_SITREP;
+   static const char* XML_COMMAND_UPDATE;
 
    static const IniFile::KeyValue INI_VERSION_NO;
    static const IniFile::KeyValue INI_RUN_COUNT;
 
-   friend class DebugDialog;
-
 signals:
    void sendTs3Message(QString text);
+   void sendTs3Command(QString command);
 
 private slots:
-   void on_pbDebugOpen_clicked();
    void on_pbLogOpen_clicked();
    void on_rbOff_clicked();
    void on_rbOn_clicked();
@@ -89,30 +72,34 @@ private slots:
    void onFsWatcherFileChanged(const QString& path);
 
 public slots:
-   void onTs3MessageReceived(const QString& message);
+   void onTs3CommandReceived(const QString& command);
 
 private:
-   void setupRemoteInfo();
-   void sortRemoteInfo();
-   void saveRemoteInfo(const QString& text);
+   void savePlayerListEntry(const Player& player);
+   void setupPlayerList();
+   void sortPlayerList();
+   void updatePlayerList(const Player& player, bool saveToFile);
 
    void setStatusMessage(const QString& message);
    void requestSendTs3Message(const QString& message);
+   void requestSendTs3Command(const QString& command);
    void checkVersionNo();
-   void updateRemoteInfo(QString info, bool saveInfo);
-   void updateLocalInfo(QStringList info);
+   void updatePlayer();
 
    void updateRunCount(int count = 0);
 
    void processProfile(const QString& filename,
                        bool forceUpdate = false);
 
-   Ui::DayzServerIp *ui;
+   QString createCommandUpdate();
+   QString createCommandSitrep();
+
+   Ui::DayzServerIp* ui;
 
    QGraphicsScene* m_scene;
 
-   QStandardItemModel m_remoteInfo;
-   QString m_remoteInfoFile;   // historical data
+   QStandardItemModel m_playerListModel;
+   QString m_playerListFile;
 
    IniFile m_settings;
 

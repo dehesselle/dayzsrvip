@@ -13,7 +13,20 @@
 #include "Log.h"
 #include "DayzServerIp.h"
 
-const IniFile::KeyValue Player::INI_DAYZ_PROFILE = { "Player/dayzProfile", "" };
+const IniFile::KeyValue Player::INI_DAYZPROFILE = { "Player/dayzProfile", "" };
+
+const char* Player::XML_PLAYER = "player";
+const char* Player::XML_TS3NAME = "ts3name";
+const char* Player::XML_DAYZNAME = "dayzname";
+const char* Player::XML_SERVERNAME = "servername";
+const char* Player::XML_SERVERIP = "serverip";
+const char* Player::XML_TIMESTAMP = "timestamp";
+const char* Player::XML_PLAYER_VERSION = "version";
+const char* Player::XML_PLAYER_VERSION_VALUE = "1";
+
+const char* Player::DAYZPROFILE_LASTMPSERVER = "lastMPServer";
+const char* Player::DAYZPROFILE_LASTMPSERVERNAME = "lastMPServerName";
+const char* Player::DAYZPROFILE_PLAYERNAME = "playerName";
 
 Player::Player() :
    m_isChanged(false)
@@ -21,7 +34,7 @@ Player::Player() :
 
 }
 
-bool Player::importFromFile(QString filename)
+bool Player::fromDayzProfile(QString filename)
 {
    bool result = false;
 
@@ -40,8 +53,8 @@ bool Player::importFromFile(QString filename)
          {
             QString line = in.readLine();
 
-            if (line.contains("playerName") ||
-                line.contains("lastMPServer"))
+            if (line.contains(DAYZPROFILE_PLAYERNAME) ||
+                line.contains(DAYZPROFILE_LASTMPSERVER))
                profileData << line;
          }
 
@@ -52,20 +65,20 @@ bool Player::importFromFile(QString filename)
             for (int i = 0; i < profileData.count(); i++)
             {
                QStringList parts = profileData.at(i).split(regex);
-               if      (parts.at(0) == "playerName")
+               if      (parts.at(0) == DAYZPROFILE_PLAYERNAME)
                {
-                  m_dayzName = parts.at(2);
-                  logDebug("found playerName=" + m_dayzName);
+                  setDayzName(parts.at(2));
+                  logDebug(QString("found ")+ DAYZPROFILE_PLAYERNAME + getDayzName());
                }
-               else if (parts.at(0) == "lastMPServer")
+               else if (parts.at(0) == DAYZPROFILE_LASTMPSERVER)
                {
-                  m_serverIp = parts.at(2);
-                  logDebug("found lastMPServer=" + m_serverIp);
+                  setServerIp(parts.at(2));
+                  logDebug(QString("found ") + DAYZPROFILE_LASTMPSERVER + getServerIp());
                }
-               else if (parts.at(0) == "lastMPServerName")
+               else if (parts.at(0) == DAYZPROFILE_LASTMPSERVERNAME)
                {
-                  m_serverName = parts.at(2);
-                  logDebug("found lastMPServerName=" + m_serverName);
+                  setServerName(parts.at(2));
+                  logDebug(QString("found ") + DAYZPROFILE_LASTMPSERVERNAME + getServerName());
                }
             }
 
@@ -90,9 +103,9 @@ bool Player::importFromFile(QString filename)
 
 void Player::updateChanged()
 {
-   if (m_dayzName == m_dayzNameOld &&
-       m_serverName == m_serverNameOld &&
-       m_serverIp == m_serverIpOld)
+   if (m_data[XML_DAYZNAME]   == m_dataOld[XML_DAYZNAME] &&
+       m_data[XML_SERVERNAME] == m_dataOld[XML_SERVERNAME] &&
+       m_data[XML_SERVERIP]   == m_dataOld[XML_SERVERIP])
    {
       m_isChanged = false;
       logDebug("no relevant changes to profile");
@@ -100,41 +113,106 @@ void Player::updateChanged()
    else
    {
       m_isChanged = true;
-      m_dayzNameOld = m_dayzName;
-      m_serverNameOld = m_serverName;
-      m_serverIpOld = m_serverIp;
+      m_dataOld[XML_DAYZNAME]   = m_data[XML_DAYZNAME];
+      m_dataOld[XML_SERVERNAME] = m_data[XML_SERVERNAME];
+      m_dataOld[XML_SERVERIP]   = m_data[XML_SERVERIP];
       logDebug("relevant changes to profile detected");
    }
 }
 
-QString Player::toMessage()
+void Player::toXml(QXmlStreamWriter& xml) const
 {
-   QString result;
-   updateTimestamp();
+   xml.writeStartElement(XML_PLAYER);
+   xml.writeAttribute(XML_PLAYER_VERSION, XML_PLAYER_VERSION_VALUE);
 
-   result = QString(DayzServerIp::MSG_STR_UPDATE_SERVER) + "###"
-         + m_ts3Name + "###"
-         + m_dayzName + "###"
-         + m_serverName + "###"
-         + m_serverIp + "###"
-         + m_timestamp;
+   foreach (const QString& key, m_data.keys())
+      xml.writeTextElement(key, m_data.value(key));
 
-   return result;
+   xml.writeEndElement();   // STR_PLAYER
 }
 
-QStringList Player::toLocalInfo()
+void Player::fromXml(QXmlStreamReader& xml)
 {
-   QStringList result;
+   if (xml.isStartElement() &&
+       xml.name() == XML_PLAYER &&
+       xml.attributes().hasAttribute(XML_PLAYER_VERSION) &&
+       xml.attributes().value(XML_PLAYER_VERSION) == XML_PLAYER_VERSION_VALUE)
+   {
+      while (! (xml.isEndElement() && xml.name() == XML_PLAYER) )
+      {
+         xml.readNext();
 
-   result << m_ts3Name
-          << m_dayzName
-          << m_serverName
-          << m_serverIp;
-
-   return result;
+         if (xml.isStartElement())
+         {
+            QString key(xml.name().toString());
+            xml.readNext();
+            if(xml.isCharacters())
+               m_data[key] = xml.text().toString();
+         }
+      }
+   }
+   else
+   {
+      logError("Player::fromXml()");
+   }
 }
 
 void Player::updateTimestamp()
 {
-   m_timestamp = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+   setTimestamp(QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss"));
+}
+
+void Player::setDayzName(const QString &dayzName)
+{
+   m_data[XML_DAYZNAME] = dayzName;
+}
+
+void Player::setTs3Name(const QString &ts3Name)
+{
+   m_data[XML_TS3NAME] = ts3Name;
+}
+
+void Player::setServerName(const QString &serverName)
+{
+   m_data[XML_SERVERNAME] = serverName;
+}
+
+void Player::setServerIp(const QString &serverIp)
+{
+   m_data[XML_SERVERIP] = serverIp;
+}
+
+void Player::setTimestamp(const QString &timestamp)
+{
+   m_data[XML_TIMESTAMP] = timestamp;
+}
+
+QString Player::getDayzName() const
+{
+   return m_data[XML_DAYZNAME];
+}
+
+QString Player::getTs3Name() const
+{
+   return m_data[XML_TS3NAME];
+}
+
+QString Player::getServerName() const
+{
+   return m_data[XML_SERVERNAME];
+}
+
+QString Player::getServerIp() const
+{
+   return m_data[XML_SERVERIP];
+}
+
+QString Player::getTimestamp() const
+{
+   return m_data[XML_TIMESTAMP];
+}
+
+const bool& Player::isChanged()
+{
+   return m_isChanged;
 }

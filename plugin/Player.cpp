@@ -68,17 +68,23 @@ bool Player::fromDayzProfile(QString filename)
                if      (parts.at(0) == DAYZPROFILE_PLAYERNAME)
                {
                   setDayzName(parts.at(2));
-                  logDebug(QString("found ")+ DAYZPROFILE_PLAYERNAME + getDayzName());
+                  logDebug("fromDayzProfile() "
+                           + QString(DAYZPROFILE_PLAYERNAME)
+                           + " " + getDayzName());
                }
                else if (parts.at(0) == DAYZPROFILE_LASTMPSERVER)
                {
                   setServerIp(parts.at(2));
-                  logDebug(QString("found ") + DAYZPROFILE_LASTMPSERVER + getServerIp());
+                  logDebug("fromDayzProfile() "
+                           + QString(DAYZPROFILE_LASTMPSERVER)
+                           + " " + getServerIp());
                }
                else if (parts.at(0) == DAYZPROFILE_LASTMPSERVERNAME)
                {
                   setServerName(parts.at(2));
-                  logDebug(QString("found ") + DAYZPROFILE_LASTMPSERVERNAME + getServerName());
+                  logDebug("fromDayzProfile() "
+                        + QString(DAYZPROFILE_LASTMPSERVERNAME)
+                        + " " + getServerName());
                }
             }
 
@@ -153,7 +159,7 @@ void Player::fromXml(QXmlStreamReader& xml)
    }
    else
    {
-      logError("Player::fromXml()");
+      logError("Player::fromXml() unable to parse");
    }
 }
 

@@ -66,10 +66,10 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       setStatusMessage(QString("Welcome! ") + DAYZSERVERIP_VERSION);
    }
 
-   logDebug("m_settings.openFile()");
+   logDebug("DayzServerIp() calling m_settings.openFile()");
    m_settings.openFile(m_configPath + "/dayzsrvip.ini");
    m_playerListFile = m_configPath + "/dayzsrvip.hst";
-   checkVersionNo();   // this has to called ASAP to handle version changes
+   checkVersionNo();   // this has to be called ASAP to handle version changes
 
    // dynamic UI setup
    {
@@ -83,22 +83,33 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->gvLogo->setScene(m_scene);
    }
 
-   logDebug("setupRemoteInfo()");
+   logDebug("DayzServerIp() calling setupPlayerList()");
    setupPlayerList();   // setup columns in treeview
 
    // import history from file
    {
-      QFile history(m_playerListFile);
+      // We have to open a textstream and feed QXmlStreamReader line
+      // by line. We cannot use QXmlStreamReader to read the file itself
+      // since it is not well-formed XML; QXmlStreamReader::atEnd is
+      // already true at the end of the very first line.
+      // The XML is not well-formed by design: every line is the raw output
+      // from Player::toXml, there are no enclosing tags. This is due to
+      // the fact that we endlessly append to the history file without wanting
+      // to rewrite the whole thing each time just to make it valid XML.
 
-      if (history.open(QFile::ReadOnly))
+      QFile historyFile(m_playerListFile);
+
+      if (historyFile.open(QFile::ReadOnly))
       {
-         logDebug("importing history from: " + history.fileName());
+         logDebug("DayzServerIp() importing: " + historyFile.fileName());
 
-         QXmlStreamReader xml(&history);
+         QTextStream historyStream(&historyFile);
 
-         while (! xml.atEnd() &&
-                xml.readNextStartElement())
+         while (! historyStream.atEnd())
          {
+            QString line = historyStream.readLine();
+            QXmlStreamReader xml(line);
+            xml.readNextStartElement();
             Player player;
             player.fromXml(xml);
             updatePlayerList(player, false);
@@ -106,7 +117,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       }
       else
       {
-         logDebug("no history to import");
+         logDebug("DayzServerIp() no history to import");
       }
    }
 
@@ -129,7 +140,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       }
       else
       {
-         logInfo("profile does not exist (not an error at this point): " + dayzProfile);
+         logInfo("DayzServerIp() no profile (not an error at this point)");
       }
    }
 
@@ -156,7 +167,7 @@ void DayzServerIp::updatePlayerList(const Player& player,
    {
       case 0:   // insert new item
       {
-         logDebug("updateRemoteInfo: new");
+         logDebug("updatePlayerList() new");
 
          int row = m_playerListModel.rowCount();
 
@@ -175,7 +186,7 @@ void DayzServerIp::updatePlayerList(const Player& player,
       }
       case 1:   // update existing item
       {
-         logDebug("updateRemoteInfo: update");
+         logDebug("updatePlayerList() update");
 
          QStandardItem* firstItem = itemList.at(RIC_TS3_NAME);
          int row = firstItem->row();
@@ -253,7 +264,8 @@ void DayzServerIp::on_rbOff_clicked()
 void DayzServerIp::on_pbRemoteInfoClear_clicked()
 {
    if (! QFile::remove(m_playerListFile))
-      logError("failed to remove history file: " + m_playerListFile);
+      logError("on_pbRemoteInfoClear_clicked() failed to remove: "
+               + m_playerListFile);
 
    m_playerListModel.clear();
    setupPlayerList();
@@ -347,7 +359,7 @@ void DayzServerIp::savePlayerListEntry(const Player& player)
    }
    else
    {
-      logError("failed to write history: " + history.fileName());
+      logError("savePlayerListEntry() failed to write: " + history.fileName());
    }
 }
 
@@ -361,12 +373,12 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
       {
          if (QFile::remove(m_playerListFile))
          {
-            logInfo("version change: deleted history");
+            logInfo("checkVersionNo() deleted history");
             m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
          }
          else
          {
-            logError("version change: failed to remove history file "
+            logError("checkVersionNo() failed to remove history file "
                      + m_playerListFile);
          }
       }
@@ -378,7 +390,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
    }
    else
    {
-      logDebug("version ok");
+      logDebug("checkVersionNo() unchanged");
       updateRunCount();
    }
 
@@ -495,12 +507,12 @@ void DayzServerIp::processProfile(const QString &filename,
    }
 
    if (count > 3)
-      logError("unable to import DayZProfile after 3 attempts");
+      logError("processProfile() failed to read DayZProfile 3 times");
 
    if (m_player.isChanged() || forceUpdate)
    {
       if (forceUpdate)
-         logDebug("forcing update");
+         logDebug("processProfile() forcing update");
 
       updatePlayer();
 

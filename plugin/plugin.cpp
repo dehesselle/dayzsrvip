@@ -202,11 +202,12 @@ void sendMessageToChannel(QString message)   // Wrapper to simplify sending
                NULL);
 
       if (rc != ERROR_ok)
-         logError("failed to send message");
+         logError("sendMessageToChannel() failed");
    }
    else
    {
-      logError(QString("failed to get ID ") + progressToStr(progress));
+      logError(QString("sendMessageToChannel() failed to get ID ")
+               + progressToStr(progress));
    }
 }
 
@@ -228,7 +229,8 @@ void sendCommandToChannel(QString command)
    }
    else
    {
-      logError(QString("failed to get ID ") + progressToStr(progress));
+      logError(QString("sendCommandToChannel() failed to get ID ")
+               + progressToStr(progress));
    }
 }
 
@@ -285,7 +287,7 @@ int ts3plugin_init()
            + QString(")"));
 
 #ifdef DEVELOPER_MODE
-   logWarning("****** DEVELOPER_MODE ******");
+   logWarning("ts3plugin_init() ****** DEVELOPER_MODE ******");
 #endif
 
    char configPath[PATH_BUFSIZE];
@@ -295,7 +297,7 @@ int ts3plugin_init()
 
    if (::dayzServerIp)
    {
-      logInfo("successfully created instance");
+      logInfo("ts3plugin_init() successfully created instance");
       ::dayzServerIp->connect(::dayzServerIp,
                               &DayzServerIp::sendTs3Message,
                               sendMessageToChannel);
@@ -306,7 +308,7 @@ int ts3plugin_init()
    }
    else
    {
-      logInfo("failed to create instance");
+      logInfo("ts3plugin_init() failed to create instance");
       result = 1;   // failure with warning
    }
 
@@ -319,16 +321,17 @@ int ts3plugin_init()
 /* Custom code called right before the plugin is unloaded */
 void ts3plugin_shutdown()
 {
-   logInfo("terminating");
+   logInfo("ts3plugin_shutdown() terminating");
 
    if (::dayzServerIp)
    {
       delete ::dayzServerIp;
-      logInfo("terminated");
+      logInfo("ts3plugin_shutdown() terminated");
    }
    else
    {
-      logInfo("nothing to terminate, most likely due to previous error");
+      logInfo("ts3plugin_shutdown() nothing to terminate, most likely due"
+              "to previous error");
    }
 
    /* Free pluginID if we registered it */

@@ -21,7 +21,7 @@
 
 const char* DayzServerIp::PLAYER_SERVERNAME_INIT = "___SERVER_NAME___";
 const char* DayzServerIp::PLAYER_SERVERIP_INIT = "___SERVER_IP___";
-const char* DayzServerIp::PLAYER_INGAMENAME_INIT = "___CHAR_NAME___";
+const char* DayzServerIp::PLAYER_INGAMENAME_INIT = "___INGAME_NAME___";
 const char* DayzServerIp::PLAYER_TS3NAME_INIT = "___TS3_NAME___";
 
 const char* DayzServerIp::XML_NAME = "dayzsrvip";
@@ -33,6 +33,7 @@ const char* DayzServerIp::XML_COMMAND_UPDATE = "update";
 
 const IniFile::KeyValue DayzServerIp::INI_VERSION_NO = { "DayzServerIp/version", "" };
 const IniFile::KeyValue DayzServerIp::INI_RUN_COUNT = { "DayzServerIp/runCount", "0" };
+const IniFile::KeyValue DayzServerIp::INI_CHAT_ENABLED = { "DayzServerIp/chatEnabled", "false" };
 
 DayzServerIp::DayzServerIp(QWidget *parent,
                            const QString& configPath) :
@@ -44,7 +45,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 {
    Q_INIT_RESOURCE(dayzsrvip);
 
-   // UI setup
+   // static UI setup
    {
       ui->setupUi(this);
 
@@ -69,6 +70,11 @@ DayzServerIp::DayzServerIp(QWidget *parent,
    m_settings.openFile(m_configPath + "/dayzsrvip.ini");
    m_playerListFile = m_configPath + "/dayzsrvip.hst";
    checkVersionNo();   // this has to called ASAP to handle version changes
+
+   // dynamic UI setup
+   {
+      ui->cbChat->setChecked(m_settings.value(INI_CHAT_ENABLED).toBool());
+   }
 
    // show DayZ Logo
    {
@@ -284,7 +290,7 @@ void DayzServerIp::onTs3CommandReceived(const QString &command)
 
          if (command == XML_COMMAND_SITREP)
          {
-            requestSendTs3Command(createCommandUpdate());
+            requestSendTs3Command(createUpdateCommand());
             setStatusMessage("Sent update to teammates.");
 
          }
@@ -308,17 +314,16 @@ void DayzServerIp::setStatusMessage(const QString &message)
 void DayzServerIp::requestSendTs3Command(const QString& command)
 {
    if (ui->rbOn->isChecked())
+   {
       emit sendTs3Command(command);
-   else
-      setStatusMessage("Not responding - still 'off'.");
-}
 
-void DayzServerIp::requestSendTs3Message(const QString &message)
-{
-   if (ui->rbOn->isChecked())
-      emit sendTs3Message(message);
+      if (ui->cbChat->isChecked())
+         emit sendTs3Message(createUpdateMessage());
+   }
    else
+   {
       setStatusMessage("Not responding - still 'off'.");
+   }
 }
 
 void DayzServerIp::sortPlayerList()
@@ -466,7 +471,7 @@ void DayzServerIp::on_pbProfileOpen_clicked()
 void DayzServerIp::on_pbSitrepRequest_clicked()
 {
    setStatusMessage("Requesting sitrep from teammates.");
-   requestSendTs3Command(createCommandSitrep());
+   requestSendTs3Command(createSitrepCommand());
 }
 
 void DayzServerIp::processProfile(const QString &filename,
@@ -501,7 +506,7 @@ void DayzServerIp::processProfile(const QString &filename,
 
       if (ui->rbOn->isChecked())
       {
-         requestSendTs3Command(createCommandUpdate());
+         requestSendTs3Command(createUpdateCommand());
          setStatusMessage("Sent update to teammates.");
       }
    }
@@ -516,7 +521,7 @@ void DayzServerIp::updateRunCount(int count)
                           m_settings.value(INI_RUN_COUNT).toInt() + 1);
 }
 
-QString DayzServerIp::createCommandUpdate()
+QString DayzServerIp::createUpdateCommand()
 {
    QString result;
 
@@ -533,7 +538,18 @@ QString DayzServerIp::createCommandUpdate()
    return result;
 }
 
-QString DayzServerIp::createCommandSitrep()
+QString DayzServerIp::createUpdateMessage()
+{
+   QString result;
+
+   result = m_player.getServerIp() + "    "
+         + m_player.getServerName() + "    "
+         + m_player.getDayzName();
+
+   return result;
+}
+
+QString DayzServerIp::createSitrepCommand()
 {
    QString result;
 
@@ -546,4 +562,9 @@ QString DayzServerIp::createCommandSitrep()
    xml.writeEndDocument();
 
    return result;
+}
+
+void DayzServerIp::on_cbChat_toggled(bool checked)
+{
+    m_settings.setValue(INI_CHAT_ENABLED, checked);
 }

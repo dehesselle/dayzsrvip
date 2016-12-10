@@ -56,6 +56,7 @@ public:
 
    static const IniFile::KeyValue INI_VERSION_NO;
    static const IniFile::KeyValue INI_RUN_COUNT;
+   static const IniFile::KeyValue INI_CHAT_ENABLED;
 
 signals:
    void sendTs3Message(QString text);
@@ -71,6 +72,8 @@ private slots:
 
    void onFsWatcherFileChanged(const QString& path);
 
+   void on_cbChat_toggled(bool checked);
+
 public slots:
    void onTs3CommandReceived(const QString& command);
 
@@ -81,7 +84,6 @@ private:
    void updatePlayerList(const Player& player, bool saveToFile);
 
    void setStatusMessage(const QString& message);
-   void requestSendTs3Message(const QString& message);
    void requestSendTs3Command(const QString& command);
    void checkVersionNo();
    void updatePlayer();
@@ -91,8 +93,9 @@ private:
    void processProfile(const QString& filename,
                        bool forceUpdate = false);
 
-   QString createCommandUpdate();
-   QString createCommandSitrep();
+   QString createUpdateCommand();
+   QString createUpdateMessage();
+   QString createSitrepCommand();
 
    Ui::DayzServerIp* ui;
 

@@ -82,7 +82,26 @@
           </layout>
          </item>
          <item>
+          <widget class="QCheckBox" name="cbChat">
+           <property name="text">
+            <string>Chat</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="pbProfileOpen">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>60</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>Open...</string>
            </property>

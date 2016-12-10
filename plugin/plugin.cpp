@@ -282,9 +282,7 @@ int ts3plugin_init()
 {
    int result = 0;
 
-   logInfo(QString("initializing (version ")
-           + DAYZSERVERIP_VERSION
-           + QString(")"));
+   logInfo("initializing (" + QString(DAYZSERVERIP_VERSION) + ")");
 
 #ifdef DEVELOPER_MODE
    logWarning("ts3plugin_init() ****** DEVELOPER_MODE ******");

@@ -19,11 +19,6 @@
 #include <QMessageBox>
 #include "Log.h"
 
-const char* DayzServerIp::PLAYER_SERVERNAME_INIT = "___SERVER_NAME___";
-const char* DayzServerIp::PLAYER_SERVERIP_INIT = "___SERVER_IP___";
-const char* DayzServerIp::PLAYER_INGAMENAME_INIT = "___INGAME_NAME___";
-const char* DayzServerIp::PLAYER_TS3NAME_INIT = "___TS3_NAME___";
-
 const char* DayzServerIp::XML_NAME = "dayzsrvip";
 const char* DayzServerIp::XML_VERSION = "version";
 const char* DayzServerIp::XML_VERSION_VALUE = "1";
@@ -64,6 +59,8 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
       setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
       setStatusMessage(QString("Welcome! ") + DAYZSERVERIP_VERSION);
+
+      setupPlayerList();   // setup columns in treeview
    }
 
    logDebug("DayzServerIp() calling m_settings.openFile()");
@@ -74,17 +71,26 @@ DayzServerIp::DayzServerIp(QWidget *parent,
    // dynamic UI setup
    {
       ui->cbChat->setChecked(m_settings.value(INI_CHAT_ENABLED).toBool());
-   }
 
-   // show DayZ Logo
-   {
-      m_scene = new QGraphicsScene(this);
-      m_scene->addPixmap(QPixmap(":/dayzlogo"));
-      ui->gvLogo->setScene(m_scene);
-   }
+      // setup HTML in tbPlayer
+      {
+         QFile htmlFile(":/playertemplate");
+         htmlFile.open(QFile::ReadOnly);
+         QTextStream htmlStream(&htmlFile);
 
-   logDebug("DayzServerIp() calling setupPlayerList()");
-   setupPlayerList();   // setup columns in treeview
+         while (! htmlStream.atEnd())
+            m_playerHtml.append(htmlStream.readLine());
+
+         ui->tbPlayer->setHtml(m_playerHtml);
+      }
+
+      // show DayZ Logo
+      {
+         m_scene = new QGraphicsScene(this);
+         m_scene->addPixmap(QPixmap(":/dayzlogo"));
+         ui->gvLogo->setScene(m_scene);
+      }
+   }
 
    // import history from file
    {
@@ -120,8 +126,6 @@ DayzServerIp::DayzServerIp(QWidget *parent,
          logDebug("DayzServerIp() no history to import");
       }
    }
-
-   m_player.setTs3Name(PLAYER_TS3NAME_INIT);
 
    // import .DayZProfile
    {
@@ -218,25 +222,13 @@ void DayzServerIp::updatePlayerList(const Player& player,
 
 void DayzServerIp::updatePlayer()
 {
-   // Why do we keep extra variables here for old data instead using
-   // Player::m_oldData? - Design decision! This is GUI-specific and
-   // Player is not supposed to care about GUI-specifics.
-   static QString oldServerName = PLAYER_SERVERNAME_INIT;
-   static QString oldServerIp = PLAYER_SERVERIP_INIT;
-   static QString oldCharName = PLAYER_INGAMENAME_INIT;
-   static QString oldTs3Name = PLAYER_TS3NAME_INIT;
+   QString html = m_playerHtml;
 
-   QString html = ui->tbPlayer->toHtml();
-   html.replace(oldTs3Name, m_player.getTs3Name().toHtmlEscaped());
-   html.replace(oldCharName, m_player.getDayzName().toHtmlEscaped());
-   html.replace(oldServerName, m_player.getServerName().toHtmlEscaped());
-   html.replace(oldServerIp, m_player.getServerIp().toHtmlEscaped());
+   html.replace(Player::INIT_TS3NAME, m_player.getTs3Name().toHtmlEscaped());
+   html.replace(Player::INIT_DAYZNAME, m_player.getDayzName().toHtmlEscaped());
+   html.replace(Player::INIT_SERVERNAME, m_player.getServerName().toHtmlEscaped());
+   html.replace(Player::INIT_SERVERIP, m_player.getServerIp().toHtmlEscaped());
    ui->tbPlayer->setHtml(html);
-
-   oldCharName = m_player.getDayzName().toHtmlEscaped();
-   oldServerName = m_player.getServerName().toHtmlEscaped();
-   oldServerIp = m_player.getServerIp().toHtmlEscaped();
-   oldTs3Name = m_player.getTs3Name().toHtmlEscaped();
 }
 
 void DayzServerIp::onFsWatcherFileChanged(const QString& path)
@@ -263,9 +255,10 @@ void DayzServerIp::on_rbOff_clicked()
 
 void DayzServerIp::on_pbRemoteInfoClear_clicked()
 {
-   if (! QFile::remove(m_playerListFile))
-      logError("on_pbRemoteInfoClear_clicked() failed to remove: "
-               + m_playerListFile);
+   if (QFile::exists(m_playerListFile))
+      if (! QFile::remove(m_playerListFile))
+         logError("on_pbRemoteInfoClear_clicked() failed to remove: "
+                  + m_playerListFile);
 
    m_playerListModel.clear();
    setupPlayerList();
@@ -452,9 +445,7 @@ void DayzServerIp::on_pbProfileOpen_clicked()
       if (m_player.fromDayzProfile(dayzProfile))
       {
          m_settings.setValue(Player::INI_DAYZPROFILE, dayzProfile);
-
-         if (m_player.isChanged())
-            updatePlayer();
+         updatePlayer();
 
          if (m_fsWatcher->files().count())
             m_fsWatcher->removePaths(m_fsWatcher->files());

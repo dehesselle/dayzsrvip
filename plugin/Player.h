@@ -33,6 +33,11 @@ public:
    static const char* DAYZPROFILE_LASTMPSERVER;
    static const char* DAYZPROFILE_LASTMPSERVERNAME;
 
+   static const char* INIT_SERVERNAME;   ///< initial value setServerName
+   static const char* INIT_SERVERIP;     ///< initial value setServerIp
+   static const char* INIT_DAYZNAME;     ///< initial value setDayzName
+   static const char* INIT_TS3NAME;      ///< initial value setTs3Name
+
    bool fromDayzProfile(QString filename);
    void toXml(QXmlStreamWriter& xml) const;
    void fromXml(QXmlStreamReader& xml);
@@ -52,13 +57,22 @@ public:
    QString getTimestamp() const;
 
    const bool& isChanged();
+   bool hasDayzProfile() const;
 
 private:
+   void setDayzNameOld(const QString& dayzName);
+   void setServerNameOld(const QString& serverName);
+   void setServerIpOld(const QString& serverIp);
+
+   QString getDayzNameOld() const;
+   QString getServerNameOld() const;
+   QString getServerIpOld() const;
+
+   void updateChangedFlag();
+
    typedef QMap<QString,QString> Data;
    Data m_data;
    Data m_dataOld;
-
-   void updateChanged();
 
    QString m_filename;
    bool m_isChanged;

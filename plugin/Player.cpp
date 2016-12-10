@@ -28,10 +28,24 @@ const char* Player::DAYZPROFILE_LASTMPSERVER = "lastMPServer";
 const char* Player::DAYZPROFILE_LASTMPSERVERNAME = "lastMPServerName";
 const char* Player::DAYZPROFILE_PLAYERNAME = "playerName";
 
+const char* Player::INIT_SERVERNAME = "___SERVER_NAME___";
+const char* Player::INIT_SERVERIP = "___SERVER_IP___";
+const char* Player::INIT_DAYZNAME = "___INGAME_NAME___";
+const char* Player::INIT_TS3NAME = "___TS3_NAME___";
+
 Player::Player() :
    m_isChanged(false)
 {
+   setDayzName(INIT_DAYZNAME);
+   setServerIp(INIT_SERVERIP);
+   setServerName(INIT_SERVERNAME);
+   setTs3Name(INIT_TS3NAME);
 
+   setDayzNameOld(INIT_DAYZNAME);
+   setServerIpOld(INIT_SERVERIP);
+   setServerNameOld(INIT_SERVERNAME);
+
+   updateTimestamp();
 }
 
 bool Player::fromDayzProfile(QString filename)
@@ -89,7 +103,7 @@ bool Player::fromDayzProfile(QString filename)
             }
 
             updateTimestamp();
-            updateChanged();
+            updateChangedFlag();
 
             result = true;
          }
@@ -107,11 +121,11 @@ bool Player::fromDayzProfile(QString filename)
    return result;
 }
 
-void Player::updateChanged()
+void Player::updateChangedFlag()
 {
-   if (m_data[XML_DAYZNAME]   == m_dataOld[XML_DAYZNAME] &&
-       m_data[XML_SERVERNAME] == m_dataOld[XML_SERVERNAME] &&
-       m_data[XML_SERVERIP]   == m_dataOld[XML_SERVERIP])
+   if (getDayzName()   == getDayzNameOld() &&
+       getServerName() == getServerNameOld() &&
+       getServerIp()   == getServerIpOld())
    {
       m_isChanged = false;
       logDebug("no relevant changes to profile");
@@ -119,9 +133,9 @@ void Player::updateChanged()
    else
    {
       m_isChanged = true;
-      m_dataOld[XML_DAYZNAME]   = m_data[XML_DAYZNAME];
-      m_dataOld[XML_SERVERNAME] = m_data[XML_SERVERNAME];
-      m_dataOld[XML_SERVERIP]   = m_data[XML_SERVERIP];
+      setDayzNameOld(getDayzName());
+      setServerNameOld(getServerName());
+      setServerIpOld(getServerIp());
       logDebug("relevant changes to profile detected");
    }
 }
@@ -221,4 +235,48 @@ QString Player::getTimestamp() const
 const bool& Player::isChanged()
 {
    return m_isChanged;
+}
+
+void Player::setDayzNameOld(const QString &dayzName)
+{
+   m_dataOld[XML_DAYZNAME] = dayzName;
+}
+
+void Player::setServerNameOld(const QString &serverName)
+{
+   m_dataOld[XML_SERVERNAME] = serverName;
+}
+
+void Player::setServerIpOld(const QString &serverIp)
+{
+   m_dataOld[XML_SERVERIP] = serverIp;
+}
+
+QString Player::getDayzNameOld() const
+{
+   return m_dataOld[XML_DAYZNAME];
+}
+
+QString Player::getServerNameOld() const
+{
+   return m_dataOld[XML_SERVERNAME];
+}
+
+QString Player::getServerIpOld() const
+{
+   return m_dataOld[XML_SERVERIP];
+}
+
+bool Player::hasDayzProfile() const
+{
+   bool result = false;
+
+   if (getDayzName() == INIT_DAYZNAME &&
+       getServerIp() == INIT_SERVERIP &&
+       getServerName() == INIT_SERVERNAME)
+      result = false;
+   else
+      result = true;
+
+   return result;
 }

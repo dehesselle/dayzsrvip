@@ -241,7 +241,7 @@ void sendCommandToChannel(QString command)
 /* Unique name identifying this plugin */
 const char* ts3plugin_name()
 {
-   return "dayzsrvip";
+   return "DayZ Server IP";
 }
 
 /* Plugin version */
@@ -478,7 +478,7 @@ void ts3plugin_onPluginCommandEvent(uint64 serverConnectionHandlerID,
                                     const char* pluginName,
                                     const char* pluginCommand)
 {
-   if (QString(pluginName) == ts3plugin_name())
+   if (QString(pluginName) == "dayzsrvip")
       ::dayzServerIp->onTs3CommandReceived(pluginCommand);
 }
 

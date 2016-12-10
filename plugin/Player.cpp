@@ -60,14 +60,16 @@ bool Player::fromDayzProfile(QString filename)
          {
             QString line = in.readLine();
 
+            // not looking for DAYZPROFILE_LASTMPSERVERNAME because first
+            // part of this string is identical to DAYPROFILE_LASTMPSERVER
             if (line.contains(DAYZPROFILE_PLAYERNAME) ||
                 line.contains(DAYZPROFILE_LASTMPSERVER))
                profileData << line;
          }
 
-         if (profileData.count() == 3)
+         if (profileData.count() == 3)   // we're supposed to have found 3 items
          {
-            QRegExp regex("=|\"");
+            QRegExp regex("=|\"");   // split the line by '=' or '"'
 
             for (int i = 0; i < profileData.count(); i++)
             {

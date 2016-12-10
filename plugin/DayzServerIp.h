@@ -35,11 +35,11 @@ public:
    enum RIC   // Remote Info Columns
    {
       RIC_TS3_NAME = 0,   ///< nickname in TeamSpeak
-      RIC_DAYZ_NAME,    ///< DayZ: playerName
+      RIC_DAYZ_NAME,      ///< DayZ: playerName
       RIC_SERVER_NAME,    ///< DayZ: lastMpServerName
       RIC_SERVER_IP,      ///< DayZ: lastMpServer
       RIC_TIMESTAMP,      ///< last update
-      RIC_COUNT
+      RIC_COUNT           ///< no. of elements in this enum
    };
 
    static const char* XML_NAME;             ///< tag
@@ -95,19 +95,19 @@ private:
 
    Ui::DayzServerIp* ui;
 
-   QGraphicsScene* m_scene;
+   QGraphicsScene* m_scene;   ///< show DayZ logo in GUI
 
-   QStandardItemModel m_playerListModel;
-   QString m_playerListFile;
+   QStandardItemModel m_playerListModel;   ///< data of all users playing DayZ
+   QString m_playerListFile;   ///< history of all users playing DayZ
 
-   IniFile m_settings;
+   IniFile m_settings;   ///< our persistent settings
 
-   QFileSystemWatcher* m_fsWatcher;
+   QFileSystemWatcher* m_fsWatcher;   ///< watch .DayZProfile for changes
 
-   Player m_player;
-   QString m_playerHtml;
+   Player m_player;        ///< data of local user playing DayZ
+   QString m_playerHtml;   ///< content of res/player_template.html for tbPlayer
 
-   QString m_configPath;
+   QString m_configPath;   ///< TeamSpeak's configuration directory
 };
 
 #endif // DAYZSERVERIP_H

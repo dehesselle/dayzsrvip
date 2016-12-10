@@ -20,6 +20,8 @@ public:
 
    static const IniFile::KeyValue INI_DAYZPROFILE;
 
+   // These are the strings used when construction the XML and "the relevant
+   // ones" are also used as key to access m_data/m_dataOld.
    static const char* XML_PLAYER;   ///< XML tag
    static const char* XML_PLAYER_VERSION;
    static const char* XML_PLAYER_VERSION_VALUE;
@@ -29,9 +31,10 @@ public:
    static const char* XML_SERVERIP;
    static const char* XML_TIMESTAMP;
 
-   static const char* DAYZPROFILE_PLAYERNAME;
-   static const char* DAYZPROFILE_LASTMPSERVER;
-   static const char* DAYZPROFILE_LASTMPSERVERNAME;
+   // These contain the exact strings we're looking for in .DayzProfile.
+   static const char* DAYZPROFILE_PLAYERNAME;         ///< playerName
+   static const char* DAYZPROFILE_LASTMPSERVER;       ///< lastMPServer (IP)
+   static const char* DAYZPROFILE_LASTMPSERVERNAME;   ///< lastMPServerName
 
    static const char* INIT_SERVERNAME;   ///< initial value setServerName
    static const char* INIT_SERVERIP;     ///< initial value setServerIp
@@ -41,7 +44,6 @@ public:
    bool fromDayzProfile(QString filename);
    void toXml(QXmlStreamWriter& xml) const;
    void fromXml(QXmlStreamReader& xml);
-
 
    void setDayzName(const QString& dayzName);
    void setTs3Name(const QString& ts3Name);
@@ -72,11 +74,11 @@ private:
    void updateChangedFlag();
 
    typedef QMap<QString,QString> Data;
-   Data m_data;
-   Data m_dataOld;
+   Data m_data;      ///< current player data
+   Data m_dataOld;   ///< previous player data (i.e. one update ago)
 
-   QString m_filename;
-   bool m_isChanged;
+   QString m_filename;   ///< .DayzProfile
+   bool m_isChanged;     ///< m_data is different from m_dataOld
 };
 
 #endif // PLAYER_H

@@ -139,8 +139,9 @@ DayzServerIp::DayzServerIp(QWidget *parent,
             m_fsWatcher->addPath(dayzProfile);
             ui->rbOn->setEnabled(true);
          }
-         // no 'else': we don't treat this as error here while still
-         // constructing; m_player will have logged an error though
+         // No 'else': we don't treat this as error while still constructing.
+         // Although this is not really supposed to happen: a valid, working
+         // profile becoming invalid.
       }
       else
       {
@@ -190,6 +191,10 @@ void DayzServerIp::updatePlayerList(const Player& player,
       }
       case 1:   // update existing item
       {
+         // The first row is cloned to a child row, then gets updated
+         // with the data received. So the most recent update always
+         // stays on top.
+
          logDebug("updatePlayerList() update");
 
          QStandardItem* firstItem = itemList.at(RIC_TS3_NAME);
@@ -197,12 +202,12 @@ void DayzServerIp::updatePlayerList(const Player& player,
 
          QList<QStandardItem*> items;
          for (int col = 0; col < m_playerListModel.columnCount(); col++)
-            if (col)
+            if (col)   // clone every column...
                items << m_playerListModel.item(row, col)->clone();
-            else   // first column (TS3 name) doesn't get cloned
+            else       // ...but the first one (TS3 name)
                items << new QStandardItem(QString(""));
 
-         firstItem->insertRow(0, items);
+         firstItem->insertRow(0, items);   // updates get inserted in front
 
          m_playerListModel.item(row, RIC_DAYZ_NAME)->setText(player.getDayzName());
          m_playerListModel.item(row, RIC_SERVER_NAME)->setText(player.getServerName());
@@ -222,7 +227,7 @@ void DayzServerIp::updatePlayerList(const Player& player,
 
 void DayzServerIp::updatePlayer()
 {
-   QString html = m_playerHtml;
+   QString html = m_playerHtml;   // always use template-html as starting point
 
    html.replace(Player::INIT_TS3NAME, m_player.getTs3Name().toHtmlEscaped());
    html.replace(Player::INIT_DAYZNAME, m_player.getDayzName().toHtmlEscaped());
@@ -241,14 +246,14 @@ void DayzServerIp::onFsWatcherFileChanged(const QString& path)
 
 void DayzServerIp::on_rbOn_clicked()
 {
-   ui->pbProfileOpen->setEnabled(false);
+   ui->pbProfileOpen->setEnabled(false);   // forbid changing profile while running
    ui->pbSitrepRequest->setEnabled(true);
    setStatusMessage("meddel on!");
 }
 
 void DayzServerIp::on_rbOff_clicked()
 {
-   ui->pbProfileOpen->setEnabled(true);
+   ui->pbProfileOpen->setEnabled(true);   // allow changing profile
    ui->pbSitrepRequest->setEnabled(false);
    setStatusMessage("meddel off!");
 }
@@ -267,6 +272,8 @@ void DayzServerIp::on_pbRemoteInfoClear_clicked()
 
 void DayzServerIp::setupPlayerList()
 {
+   //TODO save and restore these values in INI
+
    m_playerListModel.setHorizontalHeaderItem(RIC_TS3_NAME, new QStandardItem("TS3 name"));
    m_playerListModel.setHorizontalHeaderItem(RIC_DAYZ_NAME, new QStandardItem("DayZ name"));
    m_playerListModel.setHorizontalHeaderItem(RIC_SERVER_NAME, new QStandardItem("Server"));
@@ -286,7 +293,7 @@ void DayzServerIp::onTs3CommandReceived(const QString &command)
 
    while (! xml.atEnd())
    {
-      if (xml.isStartElement() &&
+      if (xml.isStartElement() &&   // the order is important!
           xml.name() == XML_NAME &&
           xml.attributes().hasAttribute(XML_VERSION) &&
           xml.attributes().value(XML_VERSION) == XML_VERSION_VALUE)
@@ -299,7 +306,7 @@ void DayzServerIp::onTs3CommandReceived(const QString &command)
             setStatusMessage("Sent update to teammates.");
 
          }
-         else if (command == XML_COMMAND_UPDATE &&
+         else if (command == XML_COMMAND_UPDATE &&   // the order is important!
                   xml.readNext())
          {
             Player player;
@@ -333,6 +340,8 @@ void DayzServerIp::requestSendTs3Command(const QString& command)
 
 void DayzServerIp::sortPlayerList()
 {
+   // This way of sorting seems to only affect the child-rows of a set,
+   // not the parent row. 
    m_playerListModel.sort(ui->tvPlayerList->header()->sortIndicatorSection(),
                      ui->tvPlayerList->header()->sortIndicatorOrder());
 }
@@ -343,6 +352,9 @@ void DayzServerIp::savePlayerListEntry(const Player& player)
 
    if (history.open(QFile::Append))
    {
+      // This will produce not-well-formed XML on purpose since we want
+      // to append records endlessly. (there are no enclosing tags)
+
       QString xmlStr;
       QXmlStreamWriter xml(&xmlStr);
       player.toXml(xml);
@@ -364,6 +376,12 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
    {
       if (QFile::exists(m_playerListFile))
       {
+         // In the past, version changes often changed the history format.
+         // Without any transformation routines for that, we have to discard
+         // the history to not cause problems.
+         // Now that we moved over to XML, this practice can probably be
+         // changed in the future.
+
          if (QFile::remove(m_playerListFile))
          {
             logInfo("checkVersionNo() deleted history");
@@ -401,6 +419,7 @@ void DayzServerIp::on_pbLogOpen_clicked()
    {
       // We need to recreate the file with CRLF so we can
       // open it with notepad.exe
+
       currentLog = logDir.path() + "/" + currentLog;
       QFile fileIn(currentLog);
       QFile fileOut(currentLog + ".txt");
@@ -466,6 +485,9 @@ void DayzServerIp::on_pbProfileOpen_clicked()
    }
    else   // file dialog has been cancelled
    {
+      // It's a design decision to just discard the old (and probably still
+      // valid) data at this point.
+
       ui->rbOn->setEnabled(false);
       ui->tbPlayer->setHtml(m_playerHtml);
       m_player.initialize();
@@ -486,10 +508,10 @@ void DayzServerIp::processProfile(const QString &filename,
 
    while (count < 4)
    {
-      // I can't remember why I'm looping over this. Since I initially
-      // won't have done this without reason (this part of the source
-      // is >1 year old), I'm guessing I've run into
-      // contention problems. Leaving it as it is for now.
+      // I can't remember why we're looping over this. Since I initially
+      // wouldn't have done this without a reason (this part of the source
+      // is >1 year old), I'm guessing I've run into contention problems.
+      // Leaving it as it is for now.
 
       count++;
 
@@ -504,7 +526,7 @@ void DayzServerIp::processProfile(const QString &filename,
 
    if (m_player.isChanged() || forceUpdate)
    {
-      if (forceUpdate)
+      if (forceUpdate)   // sitrep forces update even if profile didn't change
          logDebug("processProfile() forcing update");
 
       updatePlayer();
@@ -519,6 +541,11 @@ void DayzServerIp::processProfile(const QString &filename,
 
 void DayzServerIp::updateRunCount(int count)
 {
+   // We count the number of times this plugin has run. The intention is
+   // not to spy (usage tracking) but to automatically increase and lower
+   // the loglevel after version changes. A custom logging function callback
+   // from TS3 API has to be implemented for that (and that's a TODO).
+
    if (count)
       m_settings.setValue(INI_RUN_COUNT, count);
    else
@@ -545,6 +572,8 @@ QString DayzServerIp::createUpdateCommand()
 
 QString DayzServerIp::createUpdateMessage()
 {
+   // This will appear in the channel's chat, so it should be easily readable.
+
    QString result;
 
    result = m_player.getServerIp() + "    "

@@ -25,14 +25,13 @@ public:
    IniFile();
    ~IniFile();
 
-   /** @brief name of INI setting and its default value
-    *
-    * We use this to access a setting from an INI file as well as supplying
-    * a default value if that setting does not exist yet (e.g. on first program
-    * start with no pre-existing INI file).
-    * Best practice is to have each class that needs settings from an INI file
-    * define them as KeyValue types.
-    */
+   /// @brief name of INI setting and its default value
+   ///
+   /// We use KeyValue as a convenience to access a setting from an INI file as
+   /// well as supplying a default value if that setting does not exist yet
+   /// (e.g. on first program start with no pre-existing INI file).
+   /// Best practice is to have each class that needs settings from an INI file
+   /// define them as KeyValue types.
    struct KeyValue
    {
       const char *key;       ///< syntax is @c section.key

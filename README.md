@@ -4,9 +4,9 @@
 This plugin can show and automatically distribute and update the IP and name of the server that you're playing on across all your teammates in your channel. No more need to type the IP into the chat yourself or to join via Steam's friendlist.
 
 ## Features
-- Whenever you join a server, a message to your current channel is sent. The plugin picks up on the message and updates its list section ("remote info section", the lower half of the GUI).
+- Whenever you join a server, a message to your current channel is sent. The plugin picks up on the message and updates the "player list" section (treeview in the lower half of the GUI).
 - If you don't like or need the GUI, just close it. The plugin will keep running.
-- The data in the remote info section is saved to disk.
+- The data in the "player list" section is saved to disk.
 
 ## Usage
 There is a [manual](doc/MANUAL.md) that'll get you up and running in a minute!

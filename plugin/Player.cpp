@@ -28,9 +28,11 @@ const char* Player::DAYZPROFILE_LASTMPSERVER = "lastMPServer";
 const char* Player::DAYZPROFILE_LASTMPSERVERNAME = "lastMPServerName";
 const char* Player::DAYZPROFILE_PLAYERNAME = "playerName";
 
+// These intial values have to be the same ones
+// used in res/player_template.html.
 const char* Player::INIT_SERVERNAME = "___SERVER_NAME___";
 const char* Player::INIT_SERVERIP = "___SERVER_IP___";
-const char* Player::INIT_DAYZNAME = "___INGAME_NAME___";
+const char* Player::INIT_DAYZNAME = "___DAYZ_NAME___";
 const char* Player::INIT_TS3NAME = "___TS3_NAME___";
 
 Player::Player() :

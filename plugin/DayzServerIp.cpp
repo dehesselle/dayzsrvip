@@ -176,7 +176,7 @@ void DayzServerIp::updatePlayerList(const Player& player,
          int row = m_playerListModel.rowCount();
 
          QStandardItem* item = new QStandardItem(player.getDayzName());
-         m_playerListModel.setItem(row, RIC_INGAME_NAME, item);
+         m_playerListModel.setItem(row, RIC_DAYZ_NAME, item);
          item = new QStandardItem(player.getTs3Name());
          m_playerListModel.setItem(row, RIC_TS3_NAME, item);
          item = new QStandardItem(player.getServerName());
@@ -204,7 +204,7 @@ void DayzServerIp::updatePlayerList(const Player& player,
 
          firstItem->insertRow(0, items);
 
-         m_playerListModel.item(row, RIC_INGAME_NAME)->setText(player.getDayzName());
+         m_playerListModel.item(row, RIC_DAYZ_NAME)->setText(player.getDayzName());
          m_playerListModel.item(row, RIC_SERVER_NAME)->setText(player.getServerName());
          m_playerListModel.item(row, RIC_SERVER_IP)->setText(player.getServerIp());
          m_playerListModel.item(row, RIC_TIMESTAMP)->setText(player.getTimestamp());
@@ -268,13 +268,13 @@ void DayzServerIp::on_pbRemoteInfoClear_clicked()
 void DayzServerIp::setupPlayerList()
 {
    m_playerListModel.setHorizontalHeaderItem(RIC_TS3_NAME, new QStandardItem("TS3 name"));
-   m_playerListModel.setHorizontalHeaderItem(RIC_INGAME_NAME, new QStandardItem("ingame name"));
+   m_playerListModel.setHorizontalHeaderItem(RIC_DAYZ_NAME, new QStandardItem("DayZ name"));
    m_playerListModel.setHorizontalHeaderItem(RIC_SERVER_NAME, new QStandardItem("Server"));
    m_playerListModel.setHorizontalHeaderItem(RIC_SERVER_IP, new QStandardItem("IP"));
    m_playerListModel.setHorizontalHeaderItem(RIC_TIMESTAMP, new QStandardItem("Timestamp"));
    ui->tvPlayerList->setModel(&m_playerListModel);
    ui->tvPlayerList->setColumnWidth(RIC_TS3_NAME, 95);
-   ui->tvPlayerList->setColumnWidth(RIC_INGAME_NAME, 110);
+   ui->tvPlayerList->setColumnWidth(RIC_DAYZ_NAME, 110);
    ui->tvPlayerList->setColumnWidth(RIC_SERVER_NAME, 200);
    ui->tvPlayerList->setColumnWidth(RIC_SERVER_IP, 125);
    ui->tvPlayerList->setColumnWidth(RIC_TIMESTAMP, 80);

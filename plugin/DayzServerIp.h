@@ -35,7 +35,7 @@ public:
    enum RIC   // Remote Info Columns
    {
       RIC_TS3_NAME = 0,   ///< nickname in TeamSpeak
-      RIC_INGAME_NAME,    ///< DayZ: playerName
+      RIC_DAYZ_NAME,    ///< DayZ: playerName
       RIC_SERVER_NAME,    ///< DayZ: lastMpServerName
       RIC_SERVER_IP,      ///< DayZ: lastMpServer
       RIC_TIMESTAMP,      ///< last update

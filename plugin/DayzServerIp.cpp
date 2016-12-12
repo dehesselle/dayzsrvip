@@ -14,8 +14,6 @@
 #include <QList>
 #include <QThread>
 #include <QDateTime>
-#include <QProcess>
-#include <QDir>
 #include <QMessageBox>
 #include "Log.h"
 
@@ -53,7 +51,6 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->pbSitrepRequest->setToolTip("request everyone to send an update");
       ui->pbRemoteInfoClear->setToolTip("clear the list");
       ui->pbProfileOpen->setToolTip("select your DayZ profile file");
-      ui->pbLogOpen->setToolTip("open TeamSpeak log");
 
       ui->gvLogo->setToolTip("DayZ is the game!");
 
@@ -406,46 +403,6 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
    }
 
    logInfo("runCount = " + m_settings.value(INI_RUN_COUNT).toString());
-}
-
-void DayzServerIp::on_pbLogOpen_clicked()
-{
-   QDir logDir(m_configPath + "/logs");
-   QString currentLog = logDir.entryList(QStringList() << "*.log",
-                                         QDir::Files,
-                                         QDir::Time).at(0);
-
-   if (! currentLog.isEmpty())
-   {
-      // We need to recreate the file with CRLF so we can
-      // open it with notepad.exe
-
-      currentLog = logDir.path() + "/" + currentLog;
-      QFile fileIn(currentLog);
-      QFile fileOut(currentLog + ".txt");
-
-      if (fileIn.open(QFile::ReadOnly) &&
-          fileOut.open(QFile::WriteOnly))
-      {
-         QTextStream streamOut(&fileOut);
-
-         while (! fileIn.atEnd())
-            streamOut << fileIn.readLine() << "\r\n";
-      }
-
-      fileIn.close();
-      fileOut.close();
-
-      QProcess::startDetached("notepad.exe "
-                              + fileOut.fileName());
-   }
-   else
-   {
-      QMessageBox::information(this,
-                               "log not found",
-                               "It looks like there is no log.",
-                               QMessageBox::Ok);
-   }
 }
 
 void DayzServerIp::on_pbProfileOpen_clicked()

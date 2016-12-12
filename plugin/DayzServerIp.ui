@@ -209,19 +209,6 @@ p, li { white-space: pre-wrap; }
          </property>
         </spacer>
        </item>
-       <item>
-        <widget class="QPushButton" name="pbLogOpen">
-         <property name="maximumSize">
-          <size>
-           <width>60</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Log</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
     </layout>

@@ -60,7 +60,6 @@ signals:
 private slots:
    void on_cbChat_toggled(bool checked);
 
-   void on_pbLogOpen_clicked();
    void on_pbProfileOpen_clicked();
    void on_pbRemoteInfoClear_clicked();
    void on_pbSitrepRequest_clicked();

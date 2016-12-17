@@ -47,6 +47,8 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->rbOn->setEnabled(false);
       ui->rbOn->setToolTip("start sending your data to everyone in your channel");
 
+      ui->cbChat->setToolTip("send text messages to channel");
+
       ui->pbSitrepRequest->setEnabled(false);
       ui->pbSitrepRequest->setToolTip("request everyone to send an update");
       ui->pbRemoteInfoClear->setToolTip("clear the list");

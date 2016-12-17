@@ -71,7 +71,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
       // setup HTML in tbPlayer
       {
-         QFile htmlFile(":/playertemplate");
+         QFile htmlFile(":/playerTemplate");
          htmlFile.open(QFile::ReadOnly);
          QTextStream htmlStream(&htmlFile);
 
@@ -84,7 +84,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       // show DayZ Logo
       {
          m_scene = new QGraphicsScene(this);
-         m_scene->addPixmap(QPixmap(":/dayzlogo"));
+         m_scene->addPixmap(QPixmap(":/dayzLogo"));
          ui->gvLogo->setScene(m_scene);
       }
    }
@@ -257,14 +257,27 @@ void DayzServerIp::on_rbOff_clicked()
 
 void DayzServerIp::on_pbRemoteInfoClear_clicked()
 {
-   if (QFile::exists(m_playerListFile))
-      if (! QFile::remove(m_playerListFile))
-         logError("on_pbRemoteInfoClear_clicked() failed to remove: "
-                  + m_playerListFile);
-
-   m_playerListModel.clear();
-   setupPlayerList();
-   setStatusMessage("cleared all data");
+   switch (QMessageBox::question(
+              this,
+              "clear history",
+              "Do you want to clear the history from disk as well?",
+              QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel,
+              QMessageBox::Cancel))
+   {
+      case QMessageBox::Yes:
+         if (QFile::exists(m_playerListFile))
+            if (! QFile::remove(m_playerListFile))
+               logError("on_pbRemoteInfoClear_clicked() failed to remove: "
+                        + m_playerListFile);
+         // yes, there's no 'break' here
+      case QMessageBox::No:
+         m_playerListModel.clear();
+         setupPlayerList();
+         setStatusMessage("cleared all data");
+         break;
+      case QMessageBox::Cancel:
+         break;
+   }
 }
 
 void DayzServerIp::setupPlayerList()

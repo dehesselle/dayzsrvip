@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,2,0">
    <property name="spacing">
-    <number>6</number>
+    <number>3</number>
    </property>
    <property name="leftMargin">
     <number>9</number>
@@ -32,7 +32,7 @@
    <item>
     <layout class="QHBoxLayout" name="hlUpper" stretch="0,0">
      <property name="spacing">
-      <number>6</number>
+      <number>3</number>
      </property>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0">
@@ -105,6 +105,10 @@
            <property name="text">
             <string>Open...</string>
            </property>
+           <property name="icon">
+            <iconset resource="dayzsrvip.qrc">
+             <normaloff>:/iconFile</normaloff>:/iconFile</iconset>
+           </property>
           </widget>
          </item>
         </layout>
@@ -165,52 +169,6 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QPushButton" name="pbSitrepRequest">
-         <property name="maximumSize">
-          <size>
-           <width>60</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Sitrep</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pbRemoteInfoClear">
-         <property name="maximumSize">
-          <size>
-           <width>60</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Clear</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
     </layout>
    </item>
    <item>
@@ -222,11 +180,60 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbSitrepRequest">
+       <property name="maximumSize">
+        <size>
+         <width>60</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Sitrep</string>
+       </property>
+       <property name="icon">
+        <iconset resource="dayzsrvip.qrc">
+         <normaloff>:/iconReload</normaloff>:/iconReload</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbRemoteInfoClear">
+       <property name="maximumSize">
+        <size>
+         <width>60</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Clear</string>
+       </property>
+       <property name="icon">
+        <iconset resource="dayzsrvip.qrc">
+         <normaloff>:/iconClear</normaloff>:/iconClear</iconset>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="dayzsrvip.qrc"/>
+ </resources>
  <connections/>
 </ui>

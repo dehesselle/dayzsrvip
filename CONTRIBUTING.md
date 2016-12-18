@@ -28,6 +28,8 @@ All in all, it's not that bad, isn't it?
 - why I still changed your code although you followed all the rules.  
 :arrow_right: Don't be offended. I frequently rename things or move stuff around to adjust it to my liking. I do this all the time, not only to your code.
 
-
 # Contributing ...?
 ... other stuff? ... We'll figure this out once we get there.
+
+# Submitting bug reports
+You found a :bug:? Open an [issue](https://github.com/dehesselle/dayzsrvip/issues). Include your TeamSpeak Client's log (menu `Tools`, `Client Log` or press `<CTRL>+<L>`).

@@ -57,7 +57,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       ui->gvLogo->setToolTip("DayZ is the game!");
 
       setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-      setStatusMessage(QString("Welcome! ") + DAYZSERVERIP_VERSION);
+      setStatusMessage(QString("Welcome! ") + DAYZSRVIP_VERSION);
 
       setupPlayerList();   // setup columns in treeview
    }
@@ -384,7 +384,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
 {
    QString versionFromFile = m_settings.value(INI_VERSION_NO).toString();
 
-   if (versionFromFile != DAYZSERVERIP_VERSION)
+   if (versionFromFile != DAYZSRVIP_VERSION)
    {
       if (QFile::exists(m_playerListFile))
       {
@@ -397,7 +397,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
          if (QFile::remove(m_playerListFile))
          {
             logInfo("checkVersionNo() deleted history");
-            m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
+            m_settings.setValue(INI_VERSION_NO, DAYZSRVIP_VERSION);
          }
          else
          {
@@ -407,7 +407,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
       }
       else
       {
-         m_settings.setValue(INI_VERSION_NO, DAYZSERVERIP_VERSION);
+         m_settings.setValue(INI_VERSION_NO, DAYZSRVIP_VERSION);
       }
       updateRunCount(1);   // reset counter
    }

@@ -20,7 +20,7 @@
 #include "teamspeak/clientlib_publicdefinitions.h"
 #include "ts3_functions.h"
 #include "plugin.h"
-//--- additional stuff required by dayzsrvip -----------------------------------
+//--- additional headers required by dayzsrvip ---------------------------------
 #include "DayzServerIp.h"
 #include <QString>
 #include "Log.h"
@@ -59,7 +59,7 @@ static int wcharToUtf8(const wchar_t* str, char** result) {
 }
 #endif
 
-//--- additional stuff required by dayzsrvip -----------------------------------
+//--- additional functions and definitions required by dayzsrvip ---------------
 #ifdef QT_DEBUG
 #define DEVELOPER_MODE
 #endif
@@ -246,7 +246,7 @@ const char* ts3plugin_name()
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return DAYZSERVERIP_VERSION;
+    return DAYZSRVIP_VERSION;
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */
@@ -282,7 +282,7 @@ int ts3plugin_init()
 {
    int result = 0;
 
-   logInfo("initializing (" + QString(DAYZSERVERIP_VERSION) + ")");
+   logInfo("initializing (" + QString(DAYZSRVIP_VERSION) + ")");
 
 #ifdef DEVELOPER_MODE
    logWarning("ts3plugin_init() ****** DEVELOPER_MODE ******");

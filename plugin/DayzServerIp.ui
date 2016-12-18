@@ -30,12 +30,12 @@
     <number>9</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="hlUpper" stretch="0,0">
+    <layout class="QHBoxLayout" name="hlPlayer" stretch="0,0">
      <property name="spacing">
       <number>3</number>
      </property>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0">
+      <layout class="QVBoxLayout" name="vlLogoAndControls" stretch="1,0">
        <property name="spacing">
         <number>0</number>
        </property>
@@ -56,12 +56,12 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="hlPluginControls">
          <property name="spacing">
           <number>0</number>
          </property>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+          <layout class="QVBoxLayout" name="vlRadioButtons" stretch="0,0">
            <property name="spacing">
             <number>0</number>
            </property>
@@ -152,7 +152,7 @@ p, li { white-space: pre-wrap; }
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="hlRemoteInfo">
+    <layout class="QHBoxLayout" name="hlPlayerList">
      <item>
       <widget class="QTreeView" name="tvPlayerList">
        <property name="sizePolicy">
@@ -172,7 +172,7 @@ p, li { white-space: pre-wrap; }
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="hlStatusBar">
      <item>
       <widget class="QLabel" name="lMessage">
        <property name="text">

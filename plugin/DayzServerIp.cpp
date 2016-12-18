@@ -448,7 +448,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
       updateRunCount();
    }
 
-   logInfo(QString("checkVersionNo() runCount = ") + getRunCount());
+   logInfo("checkVersionNo() runCount = " + QString::number(getRunCount()));
 }
 
 void DayzServerIp::on_pbProfileOpen_clicked()

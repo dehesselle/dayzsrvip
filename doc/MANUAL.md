@@ -4,8 +4,8 @@
 So you know your shit and don't want/need me to guide you through?  
 Fine by me - let's go!
 
-1. Install the plugin by double-clicking `dayzsrvip.ts3_plugin`. Make sure it's enabled.
-2. Open its window via `Show` in the `Plugins`, `DayZ Server IP` menu.
+1. In your TeamSpeak client, go to `Tools`, `Options`, `Addons`. You can browse myTeamSpeak and install DayZ Server IP from there.
+2. In your TeamSpeak client, go to `Plugins`, `DayZ Server IP` and click `Show`.
 3. Click `Open...` to select your `.DayZProfile` file.
 4. Join your TeamSpeak server and channel, then click `on`.
 5. Have everybody else who you're going to play with go through steps 1-4.
@@ -14,28 +14,23 @@ Fine by me - let's go!
 ![alt-text](png/main_window.png)
 
 # DayZ Server IP - user guide
-
 Follow these few steps and you'll be up and running in a few minutes!
 
 Just to make sure there's no misunderstanding: you and all your friends need to install and use this plugin, it doesn't work own its own!
 (If it did, that would be real magic!)
 
 ## Install plugin
-:warning: __not updated yet to reflect myteamspeak.com__
-
-You can choose to install the plugin manually (download the `.zip`) or automatically (download the `.ts3_plugin`).
-
 ### automatic installation
-Download and double-click `dayzsrvip.ts3_plugin`. TeamSpeak's plugin installer will open and do everything for you.
+Go to menu `Tools`, `Options` and `Addons` in your TeamSpeak client. You can browse online for plugins and there you should find [Dayz Server IP](https://www.myteamspeak.com/addons/36985fae-1157-4be2-b807-93f72414105c).
+![alt-text](png/addons_online.png)
+
+### manual installation
+You can download the `.ts3_plugin` from either [myTeamSpeak](https://www.myteamspeak.com) or the [releases](https://github.com/dehesselle/dayzsrvip/releases) page here on GitHub. Double click it and the TeamSpeak Add-On installer will show up and do everything for you.
 
 ![alt-text](png/ts3_plugin_installer.png)
 
-### manual installation
-Download `dayzsrvip_n.n_x64.zip` (`n.n` for the version number) and extract it.
-You need to put the `dayzsrvip.dll` into TeamSpeak's `plugins` directory.
-
-![alt-text](png/explorer_ts3_folder.png)
-
+### _even more_ manual installation
+If you don't like using installers at all, download the `.ts3_plugin`, rename it to `.zip` and put the contents of the extracted `plugins` folder into your TeamSpeak's `plugins` folder.
 #### Enable plugin
 After putting it in the `plugins` folder, start Teamspeak and go to `Settings`, `Plugins`...
 
@@ -67,13 +62,11 @@ You cannot see the data that it transmitted between plugins. But you can enable 
 
 The "player list" section __(2)__ gets updated automatically whenever somebody joins a DayZ server. That also means that there won't be any updates in between, while everyone is playing. So if you're late to the party and everybody else has already joined a server, you'll have missed all those initial updates - and that's not good, is it? That's what the `Sitrep` button __(5)__ is there for. You can manually request a situation report from all other clients to get you updated.
 
-The `Clear` button __(6)__ is hopefully self-explanatory, it gets rid of all the data in the "remote info" __(2)__ section.
-
-The `Log` button __(7)__ is there to quickly open TeamSpeak's logfile, this helps with debugging.
+The `Clear` button __(6)__ is hopefully self-explanatory, it gets rid of all the data in the "player list" __(2)__ section.
 
 # How does this work?
 It's not magic, that's for sure!
 
 Whenever there are changes to your `.DayZProfile` file, the plugin gathers server IP, server name and character name from it and sends an internal (as in: invisible) message to your current channel in TeamSpeak. All clients with this plugin process this message and use it to update the "player list" __(2)__.
 
-No tricks are used; there is no interference with BattlEye, VAC, ... whatever. You don't need to take my word for it, the sourcecode is available for a reason.
+__No tricks__ are used; there is __no interference__ with BattlEye, VAC, ... whatever. But you don't need to take my word for it, the sourcecode is available for a reason.

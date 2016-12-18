@@ -21,4 +21,4 @@ If you're only interested in the plain `.DLL`, download the `.ts3_plugin`, renam
 Starting with v0.5, you need a 64bit version of TeamSpeak __3.1.x__ that provides plugin API v21. Older versions (e.g. 3.0.x) are no longer supported.
 
 ## Before you leave for Chernarus
-This project is still in development. If you encounter any bugs, [report it](CONTRIBUTING.md#submitting-bug-reports) so I can take care of it.
+This project is still in development. If you encounter any bugs, [report them](CONTRIBUTING.md#submitting-bug-reports) - thank you!

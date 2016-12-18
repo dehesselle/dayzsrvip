@@ -32,14 +32,14 @@ public:
 
    void setTs3Name(const QString& name);
 
-   enum RIC   // Remote Info Columns
+   enum PLC   // Player List Columns
    {
-      RIC_TS3_NAME = 0,   ///< nickname in TeamSpeak
-      RIC_DAYZ_NAME,      ///< DayZ: playerName
-      RIC_SERVER_NAME,    ///< DayZ: lastMpServerName
-      RIC_SERVER_IP,      ///< DayZ: lastMpServer
-      RIC_TIMESTAMP,      ///< last update
-      RIC_COUNT           ///< no. of elements in this enum
+      PLC_TS3NAME = 0,   ///< nickname in TeamSpeak
+      PLC_DAYZNAME,      ///< DayZ: playerName
+      PLC_SERVERNAME,    ///< DayZ: lastMpServerName
+      PLC_SERVERIP,      ///< DayZ: lastMpServer
+      PLC_TIMESTAMP,     ///< last update
+      PLC_COUNT          ///< no. of elements in this enum
    };
 
    static const char* XML_NAME;             ///< tag
@@ -49,9 +49,16 @@ public:
    static const char* XML_COMMAND_SITREP;   ///< attribute value
    static const char* XML_COMMAND_UPDATE;   ///< attribute value
 
-   static const IniFile::KeyValue INI_VERSION_NO;     ///< (git) version
-   static const IniFile::KeyValue INI_RUN_COUNT;      ///< usage counter
-   static const IniFile::KeyValue INI_CHAT_ENABLED;   ///< send text messages
+   static const IniFile::KeyValue INI_VERSIONNO;     ///< (git) version
+   static const IniFile::KeyValue INI_RUNCOUNT;      ///< usage counter
+   static const IniFile::KeyValue INI_CHATENABLED;   ///< send text messages
+   static const IniFile::KeyValue INI_GEOMETRY;      ///< window geometry
+
+   static const IniFile::KeyValue INI_COL_TS3NAME;      ///< column width
+   static const IniFile::KeyValue INI_COL_DAYZNAME;     ///< column width
+   static const IniFile::KeyValue INI_COL_SERVERNAME;   ///< column width
+   static const IniFile::KeyValue INI_COL_SERVERIP;     ///< column width
+   static const IniFile::KeyValue INI_COL_TIMESTAMP;    ///< column width
 
 signals:
    void sendTs3Message(QString text);

@@ -24,9 +24,16 @@ const char* DayzServerIp::XML_COMMAND = "command";
 const char* DayzServerIp::XML_COMMAND_SITREP = "sitrep";
 const char* DayzServerIp::XML_COMMAND_UPDATE = "update";
 
-const IniFile::KeyValue DayzServerIp::INI_VERSION_NO = { "DayzServerIp/version", "" };
-const IniFile::KeyValue DayzServerIp::INI_RUN_COUNT = { "DayzServerIp/runCount", "0" };
-const IniFile::KeyValue DayzServerIp::INI_CHAT_ENABLED = { "DayzServerIp/chatEnabled", "false" };
+const IniFile::KeyValue DayzServerIp::INI_VERSIONNO = { "DayzServerIp/version", "" };
+const IniFile::KeyValue DayzServerIp::INI_RUNCOUNT = { "DayzServerIp/runCount", "0" };
+const IniFile::KeyValue DayzServerIp::INI_CHATENABLED = { "DayzServerIp/chatEnabled", "false" };
+const IniFile::KeyValue DayzServerIp::INI_GEOMETRY = { "DayzServerIp/windowGeometry", "0" };
+
+const IniFile::KeyValue DayzServerIp::INI_COL_TS3NAME =    { "DayzServerIp/columnTs3Name", "95" };
+const IniFile::KeyValue DayzServerIp::INI_COL_DAYZNAME =   { "DayzServerIp/columnDayzName", "110" };
+const IniFile::KeyValue DayzServerIp::INI_COL_SERVERNAME = { "DayzServerIp/columnServerName", "200" };
+const IniFile::KeyValue DayzServerIp::INI_COL_SERVERIP =   { "DayzServerIp/columnServerIp", "125" };
+const IniFile::KeyValue DayzServerIp::INI_COL_TIMESTAMP =  { "DayzServerIp/columnTimestamp", "80" };
 
 DayzServerIp::DayzServerIp(QWidget *parent,
                            const QString& configPath) :
@@ -66,15 +73,22 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
       setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
       setStatusMessage(QString("Welcome! ") + DAYZSRVIP_VERSION);
-
-      setupPlayerList();   // setup columns in treeview
    }
 
    // dynamic UI setup
    {
       logDebug("DayzServerIp() dynamic UI setup");
 
-      ui->cbChat->setChecked(m_settings.value(INI_CHAT_ENABLED).toBool());
+      // restore window size and position
+      {
+         QVariant geometry = m_settings.value(INI_GEOMETRY);
+
+         if (geometry != "0")
+            restoreGeometry(geometry.toByteArray());
+      }
+
+      setupPlayerList();   // setup columns in treeview
+      ui->cbChat->setChecked(m_settings.value(INI_CHATENABLED).toBool());
 
       // setup HTML in tbPlayer
       {
@@ -162,6 +176,13 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
 DayzServerIp::~DayzServerIp()
 {
+   m_settings.setValue(INI_GEOMETRY, saveGeometry());
+   m_settings.setValue(INI_COL_TS3NAME, ui->tvPlayerList->columnWidth(PLC_TS3NAME));
+   m_settings.setValue(INI_COL_DAYZNAME, ui->tvPlayerList->columnWidth(PLC_DAYZNAME));
+   m_settings.setValue(INI_COL_SERVERNAME, ui->tvPlayerList->columnWidth(PLC_SERVERNAME));
+   m_settings.setValue(INI_COL_SERVERIP, ui->tvPlayerList->columnWidth(PLC_SERVERIP));
+   m_settings.setValue(INI_COL_TIMESTAMP, ui->tvPlayerList->columnWidth(PLC_TIMESTAMP));
+
    delete ui;
 }
 
@@ -185,15 +206,15 @@ void DayzServerIp::updatePlayerList(const Player& player,
          int row = m_playerListModel.rowCount();
 
          QStandardItem* item = new QStandardItem(player.getDayzName());
-         m_playerListModel.setItem(row, RIC_DAYZ_NAME, item);
+         m_playerListModel.setItem(row, PLC_DAYZNAME, item);
          item = new QStandardItem(player.getTs3Name());
-         m_playerListModel.setItem(row, RIC_TS3_NAME, item);
+         m_playerListModel.setItem(row, PLC_TS3NAME, item);
          item = new QStandardItem(player.getServerName());
-         m_playerListModel.setItem(row, RIC_SERVER_NAME, item);
+         m_playerListModel.setItem(row, PLC_SERVERNAME, item);
          item = new QStandardItem(player.getServerIp());
-         m_playerListModel.setItem(row, RIC_SERVER_IP, item);
+         m_playerListModel.setItem(row, PLC_SERVERIP, item);
          item = new QStandardItem(player.getTimestamp());
-         m_playerListModel.setItem(row, RIC_TIMESTAMP, item);
+         m_playerListModel.setItem(row, PLC_TIMESTAMP, item);
 
          break;
       }
@@ -217,10 +238,10 @@ void DayzServerIp::updatePlayerList(const Player& player,
 
          firstItem->insertRow(0, items);   // updates get inserted in front
 
-         m_playerListModel.item(row, RIC_DAYZ_NAME)->setText(player.getDayzName());
-         m_playerListModel.item(row, RIC_SERVER_NAME)->setText(player.getServerName());
-         m_playerListModel.item(row, RIC_SERVER_IP)->setText(player.getServerIp());
-         m_playerListModel.item(row, RIC_TIMESTAMP)->setText(player.getTimestamp());
+         m_playerListModel.item(row, PLC_DAYZNAME)->setText(player.getDayzName());
+         m_playerListModel.item(row, PLC_SERVERNAME)->setText(player.getServerName());
+         m_playerListModel.item(row, PLC_SERVERIP)->setText(player.getServerIp());
+         m_playerListModel.item(row, PLC_TIMESTAMP)->setText(player.getTimestamp());
 
          break;
       }
@@ -295,17 +316,17 @@ void DayzServerIp::setupPlayerList()
 {
    //TODO save and restore these values in INI
 
-   m_playerListModel.setHorizontalHeaderItem(RIC_TS3_NAME, new QStandardItem("TS3 name"));
-   m_playerListModel.setHorizontalHeaderItem(RIC_DAYZ_NAME, new QStandardItem("DayZ name"));
-   m_playerListModel.setHorizontalHeaderItem(RIC_SERVER_NAME, new QStandardItem("Server"));
-   m_playerListModel.setHorizontalHeaderItem(RIC_SERVER_IP, new QStandardItem("IP"));
-   m_playerListModel.setHorizontalHeaderItem(RIC_TIMESTAMP, new QStandardItem("Timestamp"));
+   m_playerListModel.setHorizontalHeaderItem(PLC_TS3NAME, new QStandardItem("TS3 name"));
+   m_playerListModel.setHorizontalHeaderItem(PLC_DAYZNAME, new QStandardItem("DayZ name"));
+   m_playerListModel.setHorizontalHeaderItem(PLC_SERVERNAME, new QStandardItem("Server"));
+   m_playerListModel.setHorizontalHeaderItem(PLC_SERVERIP, new QStandardItem("IP"));
+   m_playerListModel.setHorizontalHeaderItem(PLC_TIMESTAMP, new QStandardItem("Timestamp"));
    ui->tvPlayerList->setModel(&m_playerListModel);
-   ui->tvPlayerList->setColumnWidth(RIC_TS3_NAME, 95);
-   ui->tvPlayerList->setColumnWidth(RIC_DAYZ_NAME, 110);
-   ui->tvPlayerList->setColumnWidth(RIC_SERVER_NAME, 200);
-   ui->tvPlayerList->setColumnWidth(RIC_SERVER_IP, 125);
-   ui->tvPlayerList->setColumnWidth(RIC_TIMESTAMP, 80);
+   ui->tvPlayerList->setColumnWidth(PLC_TS3NAME, m_settings.value(INI_COL_TS3NAME).toInt());
+   ui->tvPlayerList->setColumnWidth(PLC_DAYZNAME, m_settings.value(INI_COL_DAYZNAME).toInt());
+   ui->tvPlayerList->setColumnWidth(PLC_SERVERNAME, m_settings.value(INI_COL_SERVERNAME).toInt());
+   ui->tvPlayerList->setColumnWidth(PLC_SERVERIP, m_settings.value(INI_COL_SERVERIP).toInt());
+   ui->tvPlayerList->setColumnWidth(PLC_TIMESTAMP, m_settings.value(INI_COL_TIMESTAMP).toInt());
 }
 
 void DayzServerIp::onTs3CommandReceived(const QString &command)
@@ -391,7 +412,7 @@ void DayzServerIp::savePlayerListEntry(const Player& player)
 
 void DayzServerIp::checkVersionNo()   // handle plugin updates
 {
-   QString versionFromFile = m_settings.value(INI_VERSION_NO).toString();
+   QString versionFromFile = m_settings.value(INI_VERSIONNO).toString();
 
    if (versionFromFile != DAYZSRVIP_VERSION)
    {
@@ -406,7 +427,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
          if (QFile::remove(m_playerListFile))
          {
             logInfo("checkVersionNo() deleted history");
-            m_settings.setValue(INI_VERSION_NO, DAYZSRVIP_VERSION);
+            m_settings.setValue(INI_VERSIONNO, DAYZSRVIP_VERSION);
          }
          else
          {
@@ -416,7 +437,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
       }
       else
       {
-         m_settings.setValue(INI_VERSION_NO, DAYZSRVIP_VERSION);
+         m_settings.setValue(INI_VERSIONNO, DAYZSRVIP_VERSION);
       }
       updateRunCount(1);   // reset counter
       logInfo("checkVersionNo() changed");
@@ -527,9 +548,9 @@ void DayzServerIp::updateRunCount(int count)
    // to automatically disable debug messages after a while.
 
    if (count)
-      m_settings.setValue(INI_RUN_COUNT, count);
+      m_settings.setValue(INI_RUNCOUNT, count);
    else
-      m_settings.setValue(INI_RUN_COUNT, getRunCount() + 1);
+      m_settings.setValue(INI_RUNCOUNT, getRunCount() + 1);
 
 #ifndef DEVELOPER_MODE
    if (getRunCount() > 20)
@@ -541,7 +562,7 @@ void DayzServerIp::updateRunCount(int count)
 
 int DayzServerIp::getRunCount()
 {
-   return m_settings.value(INI_RUN_COUNT).toInt();
+   return m_settings.value(INI_RUNCOUNT).toInt();
 }
 
 QString DayzServerIp::createUpdateCommand()
@@ -591,5 +612,5 @@ QString DayzServerIp::createSitrepCommand()
 
 void DayzServerIp::on_cbChat_toggled(bool checked)
 {
-    m_settings.setValue(INI_CHAT_ENABLED, checked);
+    m_settings.setValue(INI_CHATENABLED, checked);
 }

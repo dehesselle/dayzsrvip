@@ -45,7 +45,8 @@ void logError(QString message)
 
 void logDebug(QString message)
 {
-   ::isDebugEnabled && qDebug() << message;
+   if (::isDebugEnabled)
+      qDebug() << message;
 }
 
 void logInfo(QString message)

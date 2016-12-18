@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
 
-   qInfo()  << "DayZServerIP testprogram v" << DAYZSERVERIP_VERSION;
+   qInfo()  << "DayZServerIP testprogram v" << DAYZSRVIP_VERSION;
    qInfo()  << "using Qt v" << QT_VERSION_STR;
 
    DayzServerIp dayzServerIp(0, "D:/Temp");

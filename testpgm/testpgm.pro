@@ -28,6 +28,6 @@ FORMS    += ../plugin/DayzServerIp.ui
 RESOURCES += \
     ../plugin/dayzsrvip.qrc
 
-DEFINES += DAYZSERVERIP_VERSION=\\\"$$system(C:/Portable/msys64/usr/bin/git --git-dir $$PWD/../.git --work-tree $$PWD describe --always --tags)\\\"
+DEFINES += DAYZSRVIP_VERSION=\\\"$$system(C:/Portable/msys64/usr/bin/git --git-dir $$PWD/../.git --work-tree $$PWD describe --always --tags)\\\"
 
 INCLUDEPATH += $$PWD/../plugin

@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="dayzLogo">../res/dayzlogo.png</file>
+        <file alias="dayzLogo">../res/dayz_logo.png</file>
         <file alias="playerTemplate">../res/player_template.html</file>
         <file alias="iconClear">../res/clear_icon.png</file>
         <file alias="iconReload">../res/reload_icon.png</file>

@@ -84,6 +84,7 @@ private:
    void updatePlayer();
 
    void updateRunCount(int count = 0);
+   int getRunCount();
 
    void processProfile(const QString& filename,
                        bool forceUpdate = false);

@@ -38,8 +38,16 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 {
    Q_INIT_RESOURCE(dayzsrvip);
 
+   m_settings.openFile(m_configPath + "/dayzsrvip.ini");
+   m_playerListFile = m_configPath + "/dayzsrvip.hst";
+
+   checkVersionNo();   // this has to be called as soon as m_settings and
+                       // m_playerListFile are usable
+
    // static UI setup
    {
+      logDebug("DayzServerIp() static UI setup");
+
       ui->setupUi(this);
 
       ui->rbOff->setChecked(true);
@@ -62,13 +70,10 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       setupPlayerList();   // setup columns in treeview
    }
 
-   logDebug("DayzServerIp() calling m_settings.openFile()");
-   m_settings.openFile(m_configPath + "/dayzsrvip.ini");
-   m_playerListFile = m_configPath + "/dayzsrvip.hst";
-   checkVersionNo();   // this has to be called ASAP to handle version changes
-
    // dynamic UI setup
    {
+      logDebug("DayzServerIp() dynamic UI setup");
+
       ui->cbChat->setChecked(m_settings.value(INI_CHAT_ENABLED).toBool());
 
       // setup HTML in tbPlayer
@@ -102,6 +107,8 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       // the fact that we endlessly append to the history file without wanting
       // to rewrite the whole thing each time just to make it valid XML.
 
+      logDebug("DayzServerIp() import history");
+
       QFile historyFile(m_playerListFile);
 
       if (historyFile.open(QFile::ReadOnly))
@@ -128,6 +135,8 @@ DayzServerIp::DayzServerIp(QWidget *parent,
 
    // import .DayZProfile
    {
+      logDebug("DayzServerIp() import .DayZProfile");
+
       QString dayzProfile = m_settings.value(Player::INI_DAYZPROFILE).toString();
 
       if (QFile::exists(dayzProfile))
@@ -144,7 +153,7 @@ DayzServerIp::DayzServerIp(QWidget *parent,
       }
       else
       {
-         logInfo("DayzServerIp() no profile (not an error at this point)");
+         logInfo("DayzServerIp() no .DayZProfile (not an error at this point)");
       }
    }
 
@@ -410,6 +419,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
          m_settings.setValue(INI_VERSION_NO, DAYZSRVIP_VERSION);
       }
       updateRunCount(1);   // reset counter
+      logInfo("checkVersionNo() changed");
    }
    else
    {
@@ -417,7 +427,7 @@ void DayzServerIp::checkVersionNo()   // handle plugin updates
       updateRunCount();
    }
 
-   logInfo("runCount = " + m_settings.value(INI_RUN_COUNT).toString());
+   logInfo(QString("checkVersionNo() runCount = ") + getRunCount());
 }
 
 void DayzServerIp::on_pbProfileOpen_clicked()
@@ -514,15 +524,24 @@ void DayzServerIp::processProfile(const QString &filename,
 void DayzServerIp::updateRunCount(int count)
 {
    // We count the number of times this plugin has run. The intention is
-   // not to spy (usage tracking) but to automatically increase and lower
-   // the loglevel after version changes. A custom logging function callback
-   // from TS3 API has to be implemented for that (and that's a TODO).
+   // to automatically disable debug messages after a while.
 
    if (count)
       m_settings.setValue(INI_RUN_COUNT, count);
    else
-      m_settings.setValue(INI_RUN_COUNT,
-                          m_settings.value(INI_RUN_COUNT).toInt() + 1);
+      m_settings.setValue(INI_RUN_COUNT, getRunCount() + 1);
+
+#ifndef DEVELOPER_MODE
+   if (getRunCount() > 20)
+      disableDebugMessages();
+   else
+#endif
+      enableDebugMessages();
+}
+
+int DayzServerIp::getRunCount()
+{
+   return m_settings.value(INI_RUN_COUNT).toInt();
 }
 
 QString DayzServerIp::createUpdateCommand()

@@ -25,4 +25,7 @@ void logInfo(QString message);
 void logWarning(QString message);
 void logError(QString message);
 
+void disableDebugMessages();
+void enableDebugMessages();
+
 #endif // LOG_H

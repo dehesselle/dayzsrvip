@@ -1,5 +1,17 @@
 #include "Log.h"
 
+static bool isDebugEnabled = false;
+
+void disableDebugMessages()
+{
+   ::isDebugEnabled = false;
+}
+
+void enableDebugMessages()
+{
+   ::isDebugEnabled = true;
+}
+
 #ifdef DAYZSRVIP_LIBRARY
 
 static struct TS3Functions ts3Functions;
@@ -11,7 +23,7 @@ void setTs3FunctionsForLog(const struct TS3Functions funcs)
 
 void logDebug(QString message)
 {
-   ts3Functions.logMessage(message.toStdString().c_str(), LogLevel_DEBUG, "dayzsrvip", 0);
+   ::isDebugEnabled && ts3Functions.logMessage(message.toStdString().c_str(), LogLevel_DEBUG, "dayzsrvip", 0);
 }
 
 void logInfo(QString message)
@@ -33,7 +45,7 @@ void logError(QString message)
 
 void logDebug(QString message)
 {
-   qDebug() << message;
+   ::isDebugEnabled && qDebug() << message;
 }
 
 void logInfo(QString message)

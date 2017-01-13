@@ -15,14 +15,9 @@
 #include <QThread>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 #include "Log.h"
-
-const char* DayzServerIp::XML_NAME = "dayzsrvip";
-const char* DayzServerIp::XML_VERSION = "version";
-const char* DayzServerIp::XML_VERSION_VALUE = "1";
-const char* DayzServerIp::XML_COMMAND = "command";
-const char* DayzServerIp::XML_COMMAND_SITREP = "sitrep";
-const char* DayzServerIp::XML_COMMAND_UPDATE = "update";
 
 const IniFile::KeyValue DayzServerIp::INI_VERSIONNO = { "DayzServerIp/version", "" };
 const IniFile::KeyValue DayzServerIp::INI_RUNCOUNT = { "DayzServerIp/runCount", "0" };
@@ -329,34 +324,22 @@ void DayzServerIp::setupPlayerList()
    ui->tvPlayerList->setColumnWidth(PLC_TIMESTAMP, m_settings.value(INI_COL_TIMESTAMP).toInt());
 }
 
-void DayzServerIp::onTs3CommandReceived(const QString &command)
+void DayzServerIp::onTs3CommandReceived(const QString &commandStr)
 {
-   QXmlStreamReader xml(command);
+   Command command;
+   command.fromXmlStr(commandStr);
 
-   while (! xml.atEnd())
+   switch (command.getType())
    {
-      if (xml.isStartElement() &&   // the order is important!
-          xml.name() == XML_NAME &&
-          xml.attributes().hasAttribute(XML_VERSION) &&
-          xml.attributes().value(XML_VERSION) == XML_VERSION_VALUE)
-      {
-         QString command(xml.attributes().value(XML_COMMAND).toString());
-
-         if (command == XML_COMMAND_SITREP)
-         {
-            requestSendTs3Command(createUpdateCommand());
-            setStatusMessage("Sent update to teammates.");
-
-         }
-         else if (command == XML_COMMAND_UPDATE &&   // the order is important!
-                  xml.readNext())
-         {
-            Player player;
-            player.fromXml(xml);
-            updatePlayerList(player, true);
-         }
-      }
-      xml.readNext();
+      case Command::Type::UPDATE:
+         updatePlayerList(*command.getPlayer(), true);
+         break;
+      case Command::Type::SITREP:
+         requestSendTs3Command(Command(&m_player));
+         break;
+      case Command::Type::INVALID:
+         logError("DayzServerIp::onTs3CommandReceived() Command::Type::INVALID");
+         break;
    }
 }
 
@@ -365,13 +348,14 @@ void DayzServerIp::setStatusMessage(const QString &message)
    ui->lMessage->setText(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + message);
 }
 
-void DayzServerIp::requestSendTs3Command(const QString& command)
+void DayzServerIp::requestSendTs3Command(Command& command)
 {
    if (ui->rbOn->isChecked())
    {
-      emit sendTs3Command(command);
+      emit sendTs3Command(command.toXmlStr());
 
-      if (ui->cbChat->isChecked())
+      if (ui->cbChat->isChecked() &&
+          command.getType() == Command::Type::UPDATE)
          emit sendTs3Message(createUpdateMessage());
    }
    else
@@ -501,7 +485,7 @@ void DayzServerIp::on_pbProfileOpen_clicked()
 void DayzServerIp::on_pbSitrepRequest_clicked()
 {
    setStatusMessage("Requesting sitrep from teammates.");
-   requestSendTs3Command(createSitrepCommand());
+   requestSendTs3Command(Command(Command::Type::SITREP));
 }
 
 void DayzServerIp::processProfile(const QString &filename,
@@ -536,7 +520,7 @@ void DayzServerIp::processProfile(const QString &filename,
 
       if (ui->rbOn->isChecked())
       {
-         requestSendTs3Command(createUpdateCommand());
+         requestSendTs3Command(Command(&m_player));
          setStatusMessage("Sent update to teammates.");
       }
    }
@@ -565,23 +549,6 @@ int DayzServerIp::getRunCount()
    return m_settings.value(INI_RUNCOUNT).toInt();
 }
 
-QString DayzServerIp::createUpdateCommand()
-{
-   QString result;
-
-   QXmlStreamWriter xml(&result);
-   xml.writeStartDocument();
-   xml.writeStartElement(XML_NAME);
-   xml.writeAttribute(XML_VERSION, XML_VERSION_VALUE);
-   xml.writeAttribute(XML_COMMAND, XML_COMMAND_UPDATE);
-   m_player.updateTimestamp();
-   m_player.toXml(xml);
-   xml.writeEndElement();
-   xml.writeEndDocument();
-
-   return result;
-}
-
 QString DayzServerIp::createUpdateMessage()
 {
    // This will appear in the channel's chat, so it should be easily readable.
@@ -591,21 +558,6 @@ QString DayzServerIp::createUpdateMessage()
    result = m_player.getServerIp() + "    "
          + m_player.getServerName() + "    "
          + m_player.getDayzName();
-
-   return result;
-}
-
-QString DayzServerIp::createSitrepCommand()
-{
-   QString result;
-
-   QXmlStreamWriter xml(&result);
-   xml.writeStartDocument();
-   xml.writeStartElement(XML_NAME);
-   xml.writeAttribute(XML_VERSION, XML_VERSION_VALUE);
-   xml.writeAttribute(XML_COMMAND, XML_COMMAND_SITREP);
-   xml.writeEndElement();
-   xml.writeEndDocument();
 
    return result;
 }

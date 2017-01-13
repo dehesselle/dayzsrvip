@@ -15,13 +15,15 @@ SOURCES += plugin.cpp \
     DayzServerIp.cpp \
     IniFile.cpp \
     Player.cpp \
-    Log.cpp
+    Log.cpp \
+    Command.cpp
 
 HEADERS += plugin.h\
     DayzServerIp.h \
     IniFile.h \
     Log.h \
-    Player.h
+    Player.h \
+    Command.h
 
 INCLUDEPATH += $$PWD/../ts3psdk/include
 

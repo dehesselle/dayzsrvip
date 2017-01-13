@@ -13,9 +13,9 @@
 #include <QString>
 #include <QFileSystemWatcher>
 #include <QGraphicsScene>
-#include <QXmlStreamReader>
 #include "IniFile.h"
 #include "Player.h"
+#include "Command.h"
 
 namespace Ui {
 class DayzServerIp;
@@ -41,13 +41,6 @@ public:
       PLC_TIMESTAMP,     ///< last update
       PLC_COUNT          ///< no. of elements in this enum
    };
-
-   static const char* XML_NAME;             ///< tag
-   static const char* XML_VERSION;          ///< attribute name
-   static const char* XML_VERSION_VALUE;    ///< attribute value
-   static const char* XML_COMMAND;          ///< attribute name
-   static const char* XML_COMMAND_SITREP;   ///< attribute value
-   static const char* XML_COMMAND_UPDATE;   ///< attribute value
 
    static const IniFile::KeyValue INI_VERSIONNO;     ///< (git) version
    static const IniFile::KeyValue INI_RUNCOUNT;      ///< usage counter
@@ -77,7 +70,7 @@ private slots:
    void onFsWatcherFileChanged(const QString& path);
 
 public slots:
-   void onTs3CommandReceived(const QString& command);
+   void onTs3CommandReceived(const QString& commandStr);
 
 private:
    void savePlayerListEntry(const Player& player);
@@ -86,7 +79,7 @@ private:
    void updatePlayerList(const Player& player, bool saveToFile);
 
    void setStatusMessage(const QString& message);
-   void requestSendTs3Command(const QString& command);
+   void requestSendTs3Command(Command& command);
    void checkVersionNo();
    void updatePlayer();
 
@@ -96,9 +89,7 @@ private:
    void processProfile(const QString& filename,
                        bool forceUpdate = false);
 
-   QString createUpdateCommand();
    QString createUpdateMessage();
-   QString createSitrepCommand();
 
    Ui::DayzServerIp* ui;
 
